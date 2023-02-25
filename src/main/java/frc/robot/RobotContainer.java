@@ -12,16 +12,18 @@ import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
 /**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in
+ * the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of
+ * the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
     /* Controllers */
     private final Joystick driver = new Joystick(0);
     private final Joystick operator = new Joystick(1);
-
 
     /* Drive Controls */
     private final int translationAxis = XboxController.Axis.kLeftY.value;
@@ -34,43 +36,67 @@ public class RobotContainer {
     private final JoystickButton robotCentric = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
 
     /* Operator Controls */
-    private final int armRotation = XboxController.Axis.kRightX.value;
+    private final int armRotation = XboxController.Axis.kRightY.value;
 
     /* Operator Buttons */
-    private final JoystickButton togglePiston = new JoystickButton(operator, XboxController.Button.kA.value);
+    private final JoystickButton toggleArmPiston = new JoystickButton(operator, XboxController.Button.kA.value);
 
+    private final JoystickButton toggleIntakePiston = new JoystickButton(operator, XboxController.Button.kX.value);
+
+    private final JoystickButton armToHigh = new JoystickButton(operator, XboxController.Button.kY.value);
+
+    private final JoystickButton resetArmEncoder = new JoystickButton(operator, XboxController.Button.kStart.value);
+
+    private final JoystickButton armToSubstation = new JoystickButton(operator, XboxController.Button.kB.value);
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
-    
+
+    private final Arm arm = new Arm();
+
+    private final Intake intake = new Intake();
+
     private final Vision vision = new Vision();
 
-
-    /** The container for the robot. Contains subsystems, OI devices, and commands. */
+    /**
+     * The container for the robot. Contains subsystems, OI devices, and commands.
+     */
     public RobotContainer() {
         s_Swerve.setDefaultCommand(
-            new TeleopSwerve(
-                s_Swerve, 
-                () -> -driver.getRawAxis(translationAxis), 
-                () -> -driver.getRawAxis(strafeAxis), 
-                () -> driver.getRawAxis(rotationAxis), 
-                () -> robotCentric.getAsBoolean()
-            )
-        );
+                new TeleopSwerve(
+                    s_Swerve,
+                        () -> -driver.getRawAxis(translationAxis)*.5,
+                        () -> -driver.getRawAxis(strafeAxis)*.5,
+                        () -> driver.getRawAxis(rotationAxis)*.5,
+                        () -> robotCentric.getAsBoolean()));
+        arm.setDefaultCommand(new InstantCommand(() -> arm.setMotorSpeed(-operator.getRawAxis(armRotation)*.5), arm));
 
         // Configure the button bindings
         configureButtonBindings();
     }
 
     /**
-     * Use this method to define your button->command mappings. Buttons can be created by
+     * Use this method to define your button->command mappings. Buttons can be
+     * created by
      * instantiating a {@link GenericHID} or one of its subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
+     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing
+     * it to a {@link
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro()));
         aimToTarget.whileTrue(new AimToTarget(s_Swerve, vision));
+
+        /* Operator Buttons */
+
+        toggleArmPiston.onTrue(new InstantCommand(() -> arm.togglePiston(), arm));
+        toggleIntakePiston.onTrue(new InstantCommand(() -> intake.togglePiston(), intake));
+        
+        resetArmEncoder.onTrue(new InstantCommand(() -> arm.resetArm(), arm));
+
+        armToHigh.whileTrue(new DriveArmToPosition(arm,Constants.Arm.highAngle));
+
+        armToSubstation.whileTrue(new DriveArmToPosition(arm,Constants.Arm.substationAngle));
     }
 
     /**
@@ -84,3 +110,4 @@ public class RobotContainer {
         return new AutoBalance(s_Swerve);
     }
 }
+

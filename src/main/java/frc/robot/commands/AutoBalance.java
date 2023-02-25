@@ -25,10 +25,7 @@ public class AutoBalance extends CommandBase {
         /* Get Values, Deadband*/
         double driveSpeed;
 
-        
-        System.out.println("X Pitch: " + s_Swerve.getRoll());
         if(s_Swerve.getRoll() > 5){
-            System.out.println("Drive forward");
                 driveSpeed = .13;
             } else if(s_Swerve.getRoll() < -5){
             driveSpeed = -.13;

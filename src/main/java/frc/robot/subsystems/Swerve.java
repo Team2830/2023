@@ -34,7 +34,7 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.Swerve.Mod2.constants),
             new SwerveModule(3, Constants.Swerve.Mod3.constants)
         };
-
+        
         /* By pausing init for a second before setting module offsets, we avoid a bug with inverting motors.
          * See https://github.com/Team364/BaseFalconSwerve/issues/8 for more info.
          */
@@ -122,9 +122,9 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic(){
         swerveOdometry.update(getYaw(), getModulePositions());  
-        System.out.println("Pitch: " + gyro.getPitch());
-        System.out.println("roll: " + gyro.getRoll());
-        System.out.println("yaw: " + gyro.getYaw());
+        // System.out.println("Pitch: " + gyro.getPitch());
+        // System.out.println("roll: " + gyro.getRoll());
+        // System.out.println("yaw: " + gyro.getYaw());
 
         for(SwerveModule mod : mSwerveMods){
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
