@@ -19,8 +19,14 @@ public final class Constants {
         public static final int armForwardID = 7;
         public static final int armReverseID = 6;
 
-        public static final double substationAngle = 3.0;
+        public static final double startAngle = -58.76;
+
+        public static final double substationCubeAngle = 4.0    ;
+        public static final double substationConeAngle = 7.0;
         public static final double highAngle = 145.0;
+
+        public static final double midAngle = 180.0;
+        public static final double homeAngle = -45.0;
     }
 
     public static final class ArmMotorPID{
@@ -39,7 +45,7 @@ public final class Constants {
         public static final int kIzone = 0;
         public final double kPeakOutput = 1.0;
 
-    }
+    } 
 
     public static final class Intake {
         public static final int armForwardID = 0;
@@ -47,6 +53,15 @@ public final class Constants {
         public static final int armReverseID = 1;
     }
     public static final class Swerve {
+
+        /* Turn to Angle Constants */
+        public static final double rotationMultiplier = .01;
+
+        public static final double maxRotationalSpeed = .3;
+
+        // ----
+
+        public static final double slewRate = 1;
         public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
         public static final COTSFalconSwerveConstants chosenModule =  //TODO: This must be tuned to specific robot

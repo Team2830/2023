@@ -25,6 +25,7 @@ public class Swerve extends SubsystemBase {
     public AHRS gyro;
 
     public Swerve() {
+        
         gyro = new AHRS();
         zeroGyro();
 
@@ -58,12 +59,24 @@ public class Swerve extends SubsystemBase {
                                     translation.getY(), 
                                     rotation)
                                 );
+
+
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
         for(SwerveModule mod : mSwerveMods){
             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
-    }    
+    } 
+    public double calculateSwerveRotation( double goalAngle) {
+        double currentAngle = gyro.getAngle();
+        SmartDashboard.putNumber("Current Angle", currentAngle);
+
+
+        double speed = (goalAngle - currentAngle) * Constants.Swerve.rotationMultiplier;
+        SmartDashboard.putNumber("Speed", speed);
+return speed;
+    }
+    
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
@@ -100,10 +113,12 @@ public class Swerve extends SubsystemBase {
 
     public void zeroGyro(){
         gyro.reset();
+        gyro.setAngleAdjustment(180);
+        gyro.getAngle();
     }
 
     public Rotation2d getYaw() {
-        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
+        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw() + 180) : Rotation2d.fromDegrees(gyro.getYaw() + 180);
     }
 
     public double getPitch() {

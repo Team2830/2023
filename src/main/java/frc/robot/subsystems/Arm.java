@@ -23,7 +23,7 @@ public class Arm extends SubsystemBase {
   private WPI_TalonFX leftMotor = new WPI_TalonFX(Constants.Arm.climberLMotorID);
   private WPI_TalonFX rightMotor = new WPI_TalonFX(Constants.Arm.climberRMotorID);
   private DoubleSolenoid armPiston = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-   Constants.Arm.armForwardID, Constants.Arm.armReverseID);
+      Constants.Arm.armForwardID, Constants.Arm.armReverseID);
 
   /** Creates a new Arm. */
   public Arm() {
@@ -32,19 +32,31 @@ public class Arm extends SubsystemBase {
     rightMotor.follow(leftMotor);
     rightMotor.setInverted(InvertType.OpposeMaster);
 
+    // leftMotor.configReverseSoftLimitThreshold(angleToCount(Constants.Arm.startAngle + 3));
+    // leftMotor.configReverseSoftLimitEnable(true);
+    // rightMotor.configReverseSoftLimitThreshold(angleToCount(Constants.Arm.startAngle + 3));
+    // rightMotor.configReverseSoftLimitEnable(true);
+
     configArmMotor(leftMotor, false);
     resetArm();
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm Angle", getArmDegrees());
+    SmartDashboard.putNumber("Arm Angle", getArmAngle());
     // This method will be called once per scheduler run
   }
-public double angleToCount(double angle){
-   return (angle + 58.76)*(2048*300)/360;
-}
-  public void resetArm(){
+
+  public double angleToCount(double angle) {
+    return (angle + 58.76) * (2048 * 300) / 360;
+  }
+
+  public double getArmAngle() {
+    double armSensorValue = leftMotor.getSelectedSensorPosition();
+    return armSensorValue * 360 / (2048 * 300) + Constants.Arm.startAngle;
+  }
+
+  public void resetArm() {
     leftMotor.setSelectedSensorPosition(0);
   }
 
@@ -54,13 +66,8 @@ public double angleToCount(double angle){
 
   }
 
-  public double getArmDegrees() {
-    double armSensorValue = leftMotor.getSelectedSensorPosition();
-    return armSensorValue*360/(2048*300) - 58.76;
-  }
-
-  public void setMotorPosition(double pos){
-    double theta = getArmDegrees();
+  public void setMotorPosition(double pos) {
+    double theta = getArmAngle();
     double thetaRadians = Units.degreesToRadians(theta);
     double ff = Constants.ArmMotorPID.kG * Math.cos(thetaRadians);
 
@@ -77,24 +84,23 @@ public double angleToCount(double angle){
     armPiston.set(Value.kReverse);
   }
 
-  public void togglePiston(){
-    if(armPiston.get() == Value.kForward){ // If the piston is extended...
+  public void togglePiston() {
+    if (armPiston.get() == Value.kForward) { // If the piston is extended...
       retractPiston(); // retract
     } else {
       extendPiston(); // extend
     }
   }
 
-  private void configArmMotor(WPI_TalonFX talonFX, boolean inverted){
+  private void configArmMotor(WPI_TalonFX talonFX, boolean inverted) {
     talonFX.configFactoryDefault();
 
     talonFX.setSensorPhase(Constants.ArmMotorPID.kSensorPhase);
 
     talonFX.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor,
-     Constants.ArmMotorPID.kPIDLoopIdx,
-      Constants.ArmMotorPID.kTimeoutMs);
+        Constants.ArmMotorPID.kPIDLoopIdx,
+        Constants.ArmMotorPID.kTimeoutMs);
 
-    
     talonFX.setNeutralMode(NeutralMode.Brake);
 
     talonFX.setInverted(inverted);
@@ -106,5 +112,5 @@ public double angleToCount(double angle){
     talonFX.config_kI(Constants.ArmMotorPID.kPIDLoopIdx, Constants.ArmMotorPID.kI, Constants.ArmMotorPID.kTimeoutMs);
     talonFX.config_kD(Constants.ArmMotorPID.kPIDLoopIdx, Constants.ArmMotorPID.kD, Constants.ArmMotorPID.kTimeoutMs);
   }
-  
+
 }

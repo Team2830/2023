@@ -18,26 +18,28 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
 
   public Intake() {
+    openIntake();
   }
+  
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
   }
-  public void extendPiston() {
+  public void openIntake() {
     intakeSolenoid.set(Value.kForward);
   }
 
-  public void retractPiston() {
+  public void closeIntake() {
     intakeSolenoid.set(Value.kReverse);
   }
 
   public void togglePiston(){
     if(intakeSolenoid.get() == Value.kForward){ // If the piston is extended...
-      retractPiston(); // retract
-      System.out.println("RETRACT");
+      closeIntake();
+      System.out.println("CLOSE");
     } else {
-      extendPiston(); // 
-      System.out.println("EXTEND");
+      openIntake();
+      System.out.println("OPEN");
     }
   }
 }
