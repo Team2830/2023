@@ -4,21 +4,21 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Arm;
 
-public class DriveArmToPosition extends CommandBase {
+public class ArmManual extends CommandBase {
   private Arm arm;
-  private double angle;
-  private boolean extend;
-
+  private DoubleSupplier input;
   /** Creates a new DriveArmToPosition. */
-  public DriveArmToPosition(Arm arm, double angle, boolean extend ) {
+  public ArmManual(Arm arm, DoubleSupplier input) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.arm = arm;
-    this.angle = angle;
-    this.extend = extend;
+    this.input = input;
     addRequirements(arm);
 
   }
@@ -30,21 +30,18 @@ public class DriveArmToPosition extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    arm.setMotorPosition(arm.angleToCount(angle));
-    if (extend && arm.getArmAngle() > 80){
-      arm.extendPiston();
-    }
+    arm.setMotorSpeed(-input.getAsDouble() * 0.5);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    arm.setMotorSpeed(0);
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    double angleCurrent = arm.getArmAngle();
-  return (angleCurrent > angle - Constants.ArmConstants.angleError
-  && angleCurrent < angle + Constants.ArmConstants.angleError);
+    return false;
   }
 }

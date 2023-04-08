@@ -11,22 +11,33 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ArmStates;
 
 public class Arm extends SubsystemBase {
-  private WPI_TalonFX leftMotor = new WPI_TalonFX(Constants.Arm.climberLMotorID);
-  private WPI_TalonFX rightMotor = new WPI_TalonFX(Constants.Arm.climberRMotorID);
+  private WPI_TalonFX leftMotor = new WPI_TalonFX(Constants.ArmConstants.climberLMotorID);
+  private WPI_TalonFX rightMotor = new WPI_TalonFX(Constants.ArmConstants.climberRMotorID);
+  
   private DoubleSolenoid armPiston = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-      Constants.Arm.armForwardID, Constants.Arm.armReverseID);
+      Constants.ArmConstants.armForwardID, Constants.ArmConstants.armReverseID);
 
+  private DutyCycleEncoder encoder = new DutyCycleEncoder(0);
+
+  PIDController controller = new PIDController(Constants.ArmMotorPID.kP,
+  Constants.ArmMotorPID.kI,
+  Constants.ArmMotorPID.kD);
   /** Creates a new Arm. */
   public Arm() {
+    encoder.setDistancePerRotation(360);
+    
     leftMotor.setNeutralMode(NeutralMode.Brake);
     rightMotor.setNeutralMode(NeutralMode.Brake);
     rightMotor.follow(leftMotor);
@@ -52,8 +63,14 @@ public class Arm extends SubsystemBase {
   }
 
   public double getArmAngle() {
-    double armSensorValue = leftMotor.getSelectedSensorPosition();
-    return armSensorValue * 360 / (2048 * 300) + Constants.Arm.startAngle;
+    System.out.println();
+    //double armSensorValue = leftMotor.getSelectedSensorPosition();
+    //return armSensorValue * 360 / (2048 * 300) + Constants.ArmConstants.startAngle;
+    return encoder.getDistance() - 58.76 - 120;
+  }
+
+  public void setArmAngle(double angle){
+    setMotorSpeed(controller.calculate(getArmAngle(), angle));
   }
 
   public void resetArm() {
@@ -61,20 +78,23 @@ public class Arm extends SubsystemBase {
   }
 
   public void setMotorSpeed(double speed) {
-    leftMotor.set(speed);
-    rightMotor.set(speed);
-
+    leftMotor.set(ControlMode.PercentOutput, speed, DemandType.ArbitraryFeedForward, getFF());
   }
 
   public void setMotorPosition(double pos) {
+
+    SmartDashboard.putNumber("Feed", getFF());
+
+    leftMotor.set(ControlMode.Position, pos, DemandType.ArbitraryFeedForward, getFF());
+  }
+
+  public double getFF(){
     double theta = getArmAngle();
     double thetaRadians = Units.degreesToRadians(theta);
-    double ff = Constants.ArmMotorPID.kG * Math.cos(thetaRadians);
-
-    SmartDashboard.putNumber("Feed", ff);
-
-    leftMotor.set(ControlMode.Position, pos, DemandType.ArbitraryFeedForward, ff);
+    return Constants.ArmMotorPID.kG * Math.cos(thetaRadians);
   }
+
+
 
   public void extendPiston() {
     armPiston.set(Value.kForward);
@@ -90,6 +110,30 @@ public class Arm extends SubsystemBase {
     } else {
       extendPiston(); // extend
     }
+  }
+
+  /*
+   * Determines which side of the arm any armState is on
+   * false if battery side, true if arm post side
+   */
+  public boolean getArmSide(ArmStates ArmState){
+    boolean returnVal = false;
+    switch (ArmState){
+      case HIGH:
+      case MID:
+      returnVal = true;
+      break;
+
+      case HOME:
+      case SUBSTATION:
+      returnVal = false;
+      break;
+      
+      case DEFAULT:
+      returnVal = getArmAngle() > 90 ? true : false;
+      break;
+    }
+    return returnVal;
   }
 
   private void configArmMotor(WPI_TalonFX talonFX, boolean inverted) {

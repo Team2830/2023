@@ -3,10 +3,15 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.ArmStates;
+import frc.robot.Constants.RobotStates;
+import frc.robot.Constants.WristConstants;
 import frc.robot.autos.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
@@ -21,6 +26,9 @@ import frc.robot.subsystems.*;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
+    private SendableChooser<Command> autoChooser;
+
     /* Controllers */
     private final Joystick driver = new Joystick(0);
     private final Joystick operator = new Joystick(1);
@@ -32,55 +40,76 @@ public class RobotContainer {
 
     /* Driver Buttons */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kStart.value);
-    private final JoystickButton lockStrafe = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
-    private final JoystickButton lockTransation = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
     private final JoystickButton turnToAngle = new JoystickButton(driver, XboxController.Button.kA.value);
-    /* Operator Controls */
-    private final int armRotation = XboxController.Axis.kLeftY.value;
+    private final JoystickButton alignToTarget = new JoystickButton(driver, XboxController.Button.kX.value);
+    private final JoystickButton slowMode = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+    private final JoystickButton intakeToggle = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
+
+    private final Trigger intakeVomit = new Trigger(
+            () -> (Math.abs(driver.getRawAxis(XboxController.Axis.kRightTrigger.value)) > 0.2));
+
 
     /* Operator Buttons */
     private final JoystickButton toggleArmPiston = new JoystickButton(operator,
             XboxController.Button.kLeftBumper.value);
 
-    private final JoystickButton toggleIntakePiston = new JoystickButton(operator,
-            XboxController.Button.kRightBumper.value);
-
     private final JoystickButton armToHigh = new JoystickButton(operator, XboxController.Button.kY.value);
 
-    private final JoystickButton resetArmEncoder = new JoystickButton(operator, XboxController.Button.kStart.value);
-
     private final JoystickButton armToMid = new JoystickButton(operator, XboxController.Button.kA.value);
-   
+
     private final JoystickButton armToCube = new JoystickButton(operator, XboxController.Button.kX.value);
 
     private final JoystickButton armToCone = new JoystickButton(operator, XboxController.Button.kB.value);
 
-    private final Trigger armHome = new Trigger(() -> (operator.getPOV() >90 && operator.getPOV()<270));
+    private final Trigger armHome = new Trigger(() -> (operator.getPOV() > 90 && operator.getPOV() < 270));
+
+    // left trigger
+    private final Trigger armManual = new Trigger(
+            () -> (Math.abs(operator.getRawAxis(XboxController.Axis.kLeftTrigger.value)) > 0.2));
+    // right trigger
+    private final Trigger wristManual = new Trigger(
+            () -> (Math.abs(operator.getRawAxis(XboxController.Axis.kRightTrigger.value)) > 0.2));
 
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
 
     private final Arm arm = new Arm();
 
+    private final Wrist wrist = new Wrist();
+
     private final Intake intake = new Intake();
 
     private final Vision vision = new Vision();
+
+    public static RobotStates RobotState = RobotStates.IDLE;
+    public static ArmStates ArmState = ArmStates.DEFAULT;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
+
+        SmartDashboard.putNumber("Cone adjust", 0);
+        autoChooser = new SendableChooser<>();
+        autoChooser.setDefaultOption("Red C_C1 Charge", new ChargeAndMobility(s_Swerve, arm, intake));
+        autoChooser.addOption("Blue C_C1 Charge", new FlippedChargeAndMobility(s_Swerve, arm, intake));
+        autoChooser.addOption("Red I_C1 Two Piece", new TwoPieceAuto(s_Swerve, arm, intake));
+        autoChooser.addOption("Blue I_C2 Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
+        autoChooser.addOption("Mobility", new Mobility(s_Swerve, arm, intake));
+        autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake));
+        autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake));
+        autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake));
+        autoChooser.addOption("Auto Test", new DriveAUto(s_Swerve));
+
+        SmartDashboard.putData("autoChooser", autoChooser);
         s_Swerve.setDefaultCommand(
                 new TeleopSwerve(
                         s_Swerve,
-                        () -> -driver.getRawAxis(translationAxis) * 0.75,
-                        () -> -driver.getRawAxis(strafeAxis) * 0.75,
-                        () -> driver.getRawAxis(rotationAxis) * 0.5,
-                        () -> false,
+                        () -> driver.getRawAxis(translationAxis),
+                        () -> driver.getRawAxis(strafeAxis),
+                        () -> driver.getRawAxis(rotationAxis),
                         () -> turnToAngle.getAsBoolean(),
-                        () -> lockTransation.getAsBoolean(),
-                        () -> lockStrafe.getAsBoolean()));
-        arm.setDefaultCommand(new InstantCommand(() -> arm.setMotorSpeed(-operator.getRawAxis(armRotation) * .5), arm));
+                        () -> slowMode.getAsBoolean()));
 
         // Configure the button bindings
         configureButtonBindings();
@@ -97,28 +126,32 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro()));
-    //    aimToTarget.whileTrue(new AimToTarget(s_Swerve, vision));
-        
+        alignToTarget.whileTrue(new ScoreAlignSwerve(s_Swerve, vision));
+
+        intakeVomit.whileTrue(new IntakeVomit(intake));
+        intakeToggle.onTrue(new IntakeToggle(intake));
+        // aimToTarget.whileTrue(new AimToTarget(s_Swerve, vision));
 
         /* Operator Buttons */
 
         toggleArmPiston.onTrue(new InstantCommand(() -> arm.togglePiston(), arm));
-        toggleIntakePiston.onTrue(new InstantCommand(() -> intake.togglePiston(), intake));
 
-        resetArmEncoder.onTrue(new InstantCommand(() -> arm.resetArm(), arm));
+        armToHigh.onTrue(new SetArmState(arm, wrist, ArmStates.HIGH));
 
-        armToHigh.whileTrue(new DriveArmToPosition(arm, Constants.Arm.highAngle));
+        armToMid.onTrue(new SetArmState(arm, wrist, ArmStates.MID));
+                
+        armToCube.onTrue(new SetArmState( arm, wrist, ArmStates.SUBSTATION));
+                
 
-        armToMid.whileTrue(new DriveArmToPosition(arm, Constants.Arm.midAngle));
+        armToCone.onTrue(new SetArmState(arm, wrist, ArmStates.SUBSTATION));
+               
+        armHome.onTrue(new InstantCommand(() -> arm.retractPiston()))
+                .onTrue(new SetArmState(arm, wrist, ArmStates.HOME));
 
-        armToCube.whileTrue(new DriveArmToPosition(arm, Constants.Arm.substationCubeAngle));
+        armManual.onTrue(new InstantCommand(() -> ArmState = ArmStates.DEFAULT))
+                .onTrue(new ArmManual(arm, () -> (operator.getRawAxis(XboxController.Axis.kLeftY.value))));
 
-        armToCone.whileTrue(new DriveArmToPosition(arm, Constants.Arm.substationConeAngle));
-
-        armHome.onTrue(new InstantCommand(() -> arm.retractPiston(),arm));
-
-        armHome.whileTrue(new DriveArmToPosition(arm, Constants.Arm.homeAngle));
-
+        wristManual.whileTrue(new WristManual(wrist, () -> (operator.getRawAxis(XboxController.Axis.kRightY.value))));
     }
 
     /**
@@ -129,6 +162,9 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
         // return new exampleAuto(s_Swerve);
-        return new AutoBalance(s_Swerve);
+        // return new AutoBalance(s_Swerve);
+        // return new TwoPieceAuto(s_Swerve, arm, intake);
+        // return new ChargeAndMobility(s_Swerve,arm,intake);
+        return new CubeAuto(arm, intake);
     }
 }

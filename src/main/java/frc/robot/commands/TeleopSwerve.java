@@ -14,29 +14,34 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class TeleopSwerve extends CommandBase {    
     private Swerve s_Swerve;    
+
     private DoubleSupplier translationSup;
     private DoubleSupplier strafeSup;
     private DoubleSupplier rotationSup;
-    private BooleanSupplier robotCentricSup;
+
     private BooleanSupplier turnToAngleSup;
+    private BooleanSupplier slowMode;
+
     private SlewRateLimiter translationLimiter;
     private SlewRateLimiter strafeLimiter;
-    private BooleanSupplier lockTranslation;
-    private BooleanSupplier lockStrafe;
+    
+    
 
-    public TeleopSwerve(Swerve s_Swerve, DoubleSupplier translationSup, DoubleSupplier strafeSup,
-    DoubleSupplier rotationSup, BooleanSupplier robotCentricSup,
-     BooleanSupplier turnToAngle, BooleanSupplier lockTranslation, BooleanSupplier lockStrafe) {
+    private boolean lockRotate;
+
+    public TeleopSwerve(Swerve s_Swerve,
+     DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup,
+     BooleanSupplier turnToAngle, BooleanSupplier slowMode) {
+
         this.s_Swerve = s_Swerve;
         addRequirements(s_Swerve);
 
         this.translationSup = translationSup;
         this.strafeSup = strafeSup;
         this.rotationSup = rotationSup;
-        this.robotCentricSup = robotCentricSup;
+
         this.turnToAngleSup = turnToAngle;
-        this.lockTranslation = lockTranslation; 
-        this.lockStrafe = lockStrafe;
+        this.slowMode = slowMode;
 
         translationLimiter = new SlewRateLimiter(Constants.Swerve.slewRate);
         strafeLimiter = new SlewRateLimiter(Constants.Swerve.slewRate);
@@ -49,23 +54,24 @@ public class TeleopSwerve extends CommandBase {
         double strafeVal = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband);
 
         double rotationVal;
-        
-        if (lockTranslation.getAsBoolean()){
-            strafeVal = 0;
-        }
-        if (lockStrafe.getAsBoolean()){
-            translationVal = 0;
-            strafeVal *= .6;
+
+        if(turnToAngleSup.getAsBoolean()){
+            lockRotate = true;
         }
 
-        if (turnToAngleSup.getAsBoolean()){
+
+        if (lockRotate && Math.abs(rotationSup.getAsDouble()) < Constants.stickDeadband){
             rotationVal = s_Swerve.calculateSwerveRotation(180) + Constants.Swerve.angleKF;
             rotationVal = MathUtil.clamp(rotationVal, -Constants.Swerve.maxRotationalSpeed, Constants.Swerve.maxRotationalSpeed);
         } else {
             rotationVal = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.stickDeadband);
         }
 
-        
+
+        if(slowMode.getAsBoolean()) {
+            translationVal *= 0.5;
+            strafeVal *= 0.5;
+        }
 
         /* Drive */
         s_Swerve.drive(
@@ -73,8 +79,8 @@ public class TeleopSwerve extends CommandBase {
             strafeLimiter.calculate(strafeVal))
              .times(Constants.Swerve.maxSpeed), 
             rotationVal * Constants.Swerve.maxAngularVelocity, 
-            !robotCentricSup.getAsBoolean(), 
-            true
+            true, 
+            false
         );
     }
 }

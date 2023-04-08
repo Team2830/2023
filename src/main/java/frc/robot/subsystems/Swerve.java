@@ -118,8 +118,12 @@ return speed;
     }
 
     public Rotation2d getYaw() {
-        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw() + 180) : Rotation2d.fromDegrees(gyro.getYaw() + 180);
+        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw()/*  + 180*/) : Rotation2d.fromDegrees(gyro.getYaw()/* + 180*/);
     }
+
+    // public Rotation2d getYaw() {
+    //     return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
+    // }
 
     public double getPitch() {
         return gyro.getPitch();

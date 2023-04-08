@@ -4,36 +4,52 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
+import frc.robot.Constants.ArmStates;
 import frc.robot.subsystems.Arm;
 
-public class DriveArmToPosition extends CommandBase {
+public class ArmToAngle extends CommandBase {
   private Arm arm;
   private double angle;
-  private boolean extend;
+  private double calcAngle;
+
+  PIDController controller = new PIDController(Constants.ArmMotorPID.kP,
+  Constants.ArmMotorPID.kI,
+  Constants.ArmMotorPID.kD);
 
   /** Creates a new DriveArmToPosition. */
-  public DriveArmToPosition(Arm arm, double angle, boolean extend ) {
+  public ArmToAngle(Arm arm, double angle) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.arm = arm;
     this.angle = angle;
-    this.extend = extend;
     addRequirements(arm);
 
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    calcAngle = angle;
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    arm.setMotorPosition(arm.angleToCount(angle));
-    if (extend && arm.getArmAngle() > 80){
-      arm.extendPiston();
+    if (RobotContainer.ArmState == ArmStates.SUBSTATION){
+      calcAngle = Constants.ArmConstants.substationConeAngle + SmartDashboard.getNumber("Arm adjust", 0);
     }
+
+    if(RobotContainer.ArmState == ArmStates.HIGH){
+      if(arm.getArmAngle() > 90 && arm.getArmAngle() < 120){
+        arm.extendPiston();
+      }
+    }
+    arm.setArmAngle(calcAngle);
   }
 
   // Called once the command ends or is interrupted.
@@ -43,8 +59,6 @@ public class DriveArmToPosition extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    double angleCurrent = arm.getArmAngle();
-  return (angleCurrent > angle - Constants.ArmConstants.angleError
-  && angleCurrent < angle + Constants.ArmConstants.angleError);
+    return false;
   }
 }
