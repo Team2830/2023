@@ -384,15 +384,16 @@ public final class Constants {
                  * Drive Motor Characterization Values
                  * Divide SYSID values by 12 to convert from volts to percent output for CTRE
                  */
+                // FIXME: Tune for new drivetrain
                 public static final double driveKS = (0.061833 / 12); // TODO: This must be tuned to specific robot
                 public static final double driveKV = (2.8121 / 12);
                 public static final double driveKA = (1.2923 / 12);
 
                 /* Swerve Profiling Values */
                 /** Meters per Second */
-                public static final double maxSpeed = 4.5; // TODO: This must be tuned to specific robot
+                public static final double maxSpeed = 4.5; // FIXME: This must be tuned to specific robot
                 /** Radians per Second */
-                public static final double maxAngularVelocity = 11.5; // TODO: This must be tuned to specific robot
+                public static final double maxAngularVelocity = 11.5; // FIXME: This must be tuned to specific robot
 
                 /* Neutral Modes */
                 public static final NeutralMode angleNeutralMode = NeutralMode.Coast;

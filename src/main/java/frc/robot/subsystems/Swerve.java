@@ -111,6 +111,8 @@ return speed;
         return positions;
     }
 
+    // FIXME: This needs to account for what angle we started the match in.
+    // Teleop angle zero-ing should always be with the sponsor panel toward us
     public void zeroGyro(){
         gyro.reset();
         gyro.setAngleAdjustment(180);

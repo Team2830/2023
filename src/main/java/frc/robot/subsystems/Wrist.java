@@ -68,7 +68,7 @@ public class Wrist extends SubsystemBase {
   }
 
   public void setMotorSpeed(double speed) {
-    wristMotor.set(ControlMode.PercentOutput, speed, DemandType.ArbitraryFeedForward, WristMotorPID.kG);
+    wristMotor.set(ControlMode.PercentOutput, speed, DemandType.ArbitraryFeedForward, WristMotorPID.kG); // FIXME: I don't understand why this feedforward is in here. This just constantly runs the motor to one side.
   }
 
   // public double getFF(){
@@ -76,7 +76,7 @@ public class Wrist extends SubsystemBase {
   //   double thetaRadians = Units.degreesToRadians(theta);
   //   return Constants.ArmMotorPID.kG * Math.cos(thetaRadians);
   // }
-
+    // FIXME: Remove this function if it's not being used
   public void setMotorPosition(double pos) {
     double theta = getWristAngle();
     double thetaRadians = Units.degreesToRadians(theta);
@@ -87,6 +87,7 @@ public class Wrist extends SubsystemBase {
     wristMotor.set(ControlMode.Position, pos, DemandType.ArbitraryFeedForward, ff);
   }
 
+  // TODO: Add a condition to switch to manual if the encoder is disconnected
   public void setWristAngle(double angle){
     setMotorSpeed(wristController.calculate(getWristAngle(), angle));
   }

@@ -92,6 +92,7 @@ public class RobotContainer {
      */
     public RobotContainer() {
 
+        // TODO: Remove no longer relevant autonomous commands
         SmartDashboard.putNumber("Cone adjust", 0);
         autoChooser = new SendableChooser<>();
         autoChooser.setDefaultOption("Red C_C1 Charge", new ChargeAndMobility(s_Swerve, arm, intake));

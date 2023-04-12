@@ -69,7 +69,7 @@ public class TeleopSwerve extends CommandBase {
 
 
         if (lockRotate && Math.abs(rotationSup.getAsDouble()) < Constants.stickDeadband){
-            rotationVal = s_Swerve.calculateSwerveRotation(goalAngle ) + Constants.Swerve.angleKF;
+            rotationVal = s_Swerve.calculateSwerveRotation(goalAngle ) + Constants.Swerve.angleKF; // FIXME: This feed forward needs to take into account positive or negative
             rotationVal = MathUtil.clamp(rotationVal, -Constants.Swerve.maxRotationalSpeed, Constants.Swerve.maxRotationalSpeed);
         } else {
             lockRotate = false;

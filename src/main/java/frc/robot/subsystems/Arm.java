@@ -88,6 +88,7 @@ public class Arm extends SubsystemBase {
     leftMotor.set(ControlMode.PercentOutput, speed, DemandType.ArbitraryFeedForward, getFF());
   }
 
+  // TODO: Add a condition to switch to manual if the encoder is disconnected
   public void setMotorPosition(double pos) {
 
     SmartDashboard.putNumber("Feed", getFF());
