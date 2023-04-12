@@ -19,19 +19,20 @@ public class TeleopSwerve extends CommandBase {
     private DoubleSupplier strafeSup;
     private DoubleSupplier rotationSup;
 
-    private BooleanSupplier turnToAngleSup;
+    private BooleanSupplier turnToForwardSup;
+    private BooleanSupplier turnToBackwardSup;
     private BooleanSupplier slowMode;
 
     private SlewRateLimiter translationLimiter;
     private SlewRateLimiter strafeLimiter;
     
-    
-
     private boolean lockRotate;
+
+    private double goalAngle = 0;
 
     public TeleopSwerve(Swerve s_Swerve,
      DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup,
-     BooleanSupplier turnToAngle, BooleanSupplier slowMode) {
+     BooleanSupplier turnToForwardSup,BooleanSupplier turnToBackwardSup, BooleanSupplier slowMode) {
 
         this.s_Swerve = s_Swerve;
         addRequirements(s_Swerve);
@@ -40,7 +41,9 @@ public class TeleopSwerve extends CommandBase {
         this.strafeSup = strafeSup;
         this.rotationSup = rotationSup;
 
-        this.turnToAngleSup = turnToAngle;
+        this.turnToForwardSup = turnToForwardSup;
+        this.turnToBackwardSup = turnToBackwardSup;
+
         this.slowMode = slowMode;
 
         translationLimiter = new SlewRateLimiter(Constants.Swerve.slewRate);
@@ -55,16 +58,22 @@ public class TeleopSwerve extends CommandBase {
 
         double rotationVal;
 
-        if(turnToAngleSup.getAsBoolean()){
+        if(turnToForwardSup.getAsBoolean()){
             lockRotate = true;
+            goalAngle = 0;
+        }
+        if(turnToBackwardSup.getAsBoolean()){
+            lockRotate = true;
+            goalAngle = 180;
         }
 
 
         if (lockRotate && Math.abs(rotationSup.getAsDouble()) < Constants.stickDeadband){
-            rotationVal = s_Swerve.calculateSwerveRotation(180) + Constants.Swerve.angleKF;
+            rotationVal = s_Swerve.calculateSwerveRotation(goalAngle ) + Constants.Swerve.angleKF;
             rotationVal = MathUtil.clamp(rotationVal, -Constants.Swerve.maxRotationalSpeed, Constants.Swerve.maxRotationalSpeed);
         } else {
-            rotationVal = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.stickDeadband);
+            lockRotate = false;
+            rotationVal = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.stickDeadband) * .5;
         }
 
 

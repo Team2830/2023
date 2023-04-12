@@ -34,6 +34,9 @@ public class Arm extends SubsystemBase {
   PIDController controller = new PIDController(Constants.ArmMotorPID.kP,
   Constants.ArmMotorPID.kI,
   Constants.ArmMotorPID.kD);
+
+  private double angleOffset = 0;
+
   /** Creates a new Arm. */
   public Arm() {
     encoder.setDistancePerRotation(360);
@@ -50,6 +53,11 @@ public class Arm extends SubsystemBase {
 
     configArmMotor(leftMotor, false);
     resetArm();
+    if(Math.abs(encoder.getDistance()) > 180){
+      angleOffset = 360;
+    } else {
+      angleOffset = 0;
+    }
   }
 
   @Override
@@ -63,10 +71,9 @@ public class Arm extends SubsystemBase {
   }
 
   public double getArmAngle() {
-    System.out.println();
     //double armSensorValue = leftMotor.getSelectedSensorPosition();
     //return armSensorValue * 360 / (2048 * 300) + Constants.ArmConstants.startAngle;
-    return encoder.getDistance() - 58.76 - 120;
+    return -encoder.getDistance() + 61 - angleOffset;
   }
 
   public void setArmAngle(double angle){
@@ -125,7 +132,8 @@ public class Arm extends SubsystemBase {
       break;
 
       case HOME:
-      case SUBSTATION:
+      case CONE:
+      case CUBE:
       returnVal = false;
       break;
       

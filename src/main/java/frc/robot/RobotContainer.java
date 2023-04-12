@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmStates;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.RobotStates;
 import frc.robot.Constants.WristConstants;
 import frc.robot.autos.*;
@@ -40,14 +41,16 @@ public class RobotContainer {
 
     /* Driver Buttons */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kStart.value);
-    private final JoystickButton turnToAngle = new JoystickButton(driver, XboxController.Button.kA.value);
+    private final JoystickButton turnToForward = new JoystickButton(driver, XboxController.Button.kY.value);
+    private final JoystickButton turnToBackward = new JoystickButton(driver, XboxController.Button.kA.value);
     private final JoystickButton alignToTarget = new JoystickButton(driver, XboxController.Button.kX.value);
-    private final JoystickButton slowMode = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+  
+    private final Trigger slowMode = new Trigger(
+        () -> (Math.abs(driver.getRawAxis(XboxController.Axis.kLeftTrigger.value)) > 0.2));
+
     private final JoystickButton intakeToggle = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
 
-    private final Trigger intakeVomit = new Trigger(
-            () -> (Math.abs(driver.getRawAxis(XboxController.Axis.kRightTrigger.value)) > 0.2));
-
+    private final JoystickButton intakeVomit = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
 
     /* Operator Buttons */
     private final JoystickButton toggleArmPiston = new JoystickButton(operator,
@@ -93,13 +96,15 @@ public class RobotContainer {
         autoChooser = new SendableChooser<>();
         autoChooser.setDefaultOption("Red C_C1 Charge", new ChargeAndMobility(s_Swerve, arm, intake));
         autoChooser.addOption("Blue C_C1 Charge", new FlippedChargeAndMobility(s_Swerve, arm, intake));
-        autoChooser.addOption("Red I_C1 Two Piece", new TwoPieceAuto(s_Swerve, arm, intake));
-        autoChooser.addOption("Blue I_C2 Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
-        autoChooser.addOption("Mobility", new Mobility(s_Swerve, arm, intake));
-        autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake));
-        autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake));
+        //autoChooser.addOption("Red I_C1 Two Piece", new TwoPieceAuto(s_Swerve, arm, intake));
+        //autoChooser.addOption("Blue I_C2 Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
+        //autoChooser.addOption("Mobility", new Mobility(s_Swerve, arm, intake));
+        //autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake));
+        //autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake));
         autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake));
-        autoChooser.addOption("Auto Test", new DriveAUto(s_Swerve));
+        autoChooser.addOption("Red I_CU Three Piece", new ThreePieceAuto(s_Swerve, arm, intake, wrist));
+        //autoChooser.addOption("Blue I_CU Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
+        //autoChooser.addOption("Auto Test", new DriveAUto(s_Swerve));
 
         SmartDashboard.putData("autoChooser", autoChooser);
         s_Swerve.setDefaultCommand(
@@ -108,7 +113,8 @@ public class RobotContainer {
                         () -> driver.getRawAxis(translationAxis),
                         () -> driver.getRawAxis(strafeAxis),
                         () -> driver.getRawAxis(rotationAxis),
-                        () -> turnToAngle.getAsBoolean(),
+                        () -> turnToForward.getAsBoolean(),
+                        () -> turnToBackward.getAsBoolean(),
                         () -> slowMode.getAsBoolean()));
 
         // Configure the button bindings
@@ -128,23 +134,27 @@ public class RobotContainer {
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro()));
         alignToTarget.whileTrue(new ScoreAlignSwerve(s_Swerve, vision));
 
-        intakeVomit.whileTrue(new IntakeVomit(intake));
-        intakeToggle.onTrue(new IntakeToggle(intake));
+        intakeVomit.onTrue(new TimedVomit(intake).andThen(new InstantCommand(() -> arm.retractPiston(), arm)));
+        intakeToggle.onFalse(new IntakeToggle(intake, intakeToggle));
         // aimToTarget.whileTrue(new AimToTarget(s_Swerve, vision));
 
         /* Operator Buttons */
 
-        toggleArmPiston.onTrue(new InstantCommand(() -> arm.togglePiston(), arm));
+        toggleArmPiston.onTrue(new InstantCommand(() -> arm.togglePiston(), arm))
+        .onTrue(new SetArmState(arm, wrist, ArmStates.CHECK));
 
         armToHigh.onTrue(new SetArmState(arm, wrist, ArmStates.HIGH));
 
         armToMid.onTrue(new SetArmState(arm, wrist, ArmStates.MID));
                 
-        armToCube.onTrue(new SetArmState( arm, wrist, ArmStates.SUBSTATION));
-                
+        armToCube.onTrue(new SetArmState( arm, wrist, ArmStates.CUBE))
+        .onTrue(new InstantCommand(() -> RobotState = RobotStates.INTAKE))
+        .onTrue(new InstantCommand(() -> intake.setMotorSpeed(IntakeConstants.intakeSpeed)));
 
-        armToCone.onTrue(new SetArmState(arm, wrist, ArmStates.SUBSTATION));
-               
+        armToCone.onTrue(new SetArmState(arm, wrist, ArmStates.CONE))
+        .onTrue(new InstantCommand(() -> RobotState = RobotStates.INTAKE))
+        .onTrue(new InstantCommand(() -> intake.setMotorSpeed(IntakeConstants.intakeSpeed)));
+
         armHome.onTrue(new InstantCommand(() -> arm.retractPiston()))
                 .onTrue(new SetArmState(arm, wrist, ArmStates.HOME));
 
@@ -165,6 +175,6 @@ public class RobotContainer {
         // return new AutoBalance(s_Swerve);
         // return new TwoPieceAuto(s_Swerve, arm, intake);
         // return new ChargeAndMobility(s_Swerve,arm,intake);
-        return new CubeAuto(arm, intake);
+        return autoChooser.getSelected();
     }
 }

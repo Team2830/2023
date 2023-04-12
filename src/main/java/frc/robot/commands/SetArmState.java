@@ -7,9 +7,11 @@ package frc.robot.commands;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ArmStates;
+import frc.robot.Constants.RobotStates;
 import frc.robot.Constants.WristConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Wrist;
@@ -40,11 +42,13 @@ private double wristAngle;
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    RobotContainer.ArmState = currentState;
     armFlip = arm.getArmSide(currentState) != arm.getArmSide(lastState);
 
     if(armFlip){
       wrist.setWristAngle(WristConstants.flipAngle);
+    }
+    if(currentState == ArmStates.CHECK){
+      currentState = RobotContainer.ArmState;
     }
 
     switch (currentState){
@@ -59,37 +63,41 @@ private double wristAngle;
 
       case HOME:
       armAngle = ArmConstants.homeAngle;
-      wristAngle = WristConstants.homeAngle;
+
+      wristAngle = RobotContainer.RobotState == RobotStates.INTAKE ? 
+        WristConstants.groundAngle : WristConstants.homeAngle;
       break;
-      case SUBSTATION:
-      armAngle = ArmConstants.substationConeAngle;
+      case CONE:
+      armAngle = ArmConstants.substationConeAngle; 
+      wristAngle = WristConstants.substationAngle;
+      break;
+      case CUBE:
+      armAngle = ArmConstants.substationCubeAngle; 
       wristAngle = WristConstants.substationAngle;
       break;
     }
-    armAngle = 0;
-    wristAngle = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (currentState == ArmStates.SUBSTATION){
-    //  ArmConstants.substationConeAngle + SmartDashboard.getNumber("Arm adjust", 0);
-    }
+    System.out.println("running");
     arm.setArmAngle(armAngle + SmartDashboard.getNumber("Arm adjust", 0));
 
-    if (armFlip) {
-      if (!arm.getArmSide(lastState) && arm.getArmAngle() > 100){
-        armFlip = false;
-      } else if (arm.getArmSide(lastState) && arm.getArmAngle() < 80) {
-        armFlip = false;
-      }
-    } else {
-      wrist.setWristAngle(wristAngle);
-    }
+    wrist.setWristAngle(wristAngle);
+
+    // if (armFlip) {
+    //   if (!arm.getArmSide(lastState) && arm.getArmAngle() > 100){
+    //     armFlip = false;
+    //   } else if (arm.getArmSide(lastState) && arm.getArmAngle() < 80) {
+    //     armFlip = false;
+    //   }
+    // } else {
+    //  wrist.setWristAngle(0); //wristAngle
+    // }
 
     if (currentState == ArmStates.HIGH){
-      if (arm.getArmAngle() > 90 && arm.getArmAngle() < 110){
+      if (arm.getArmAngle() > 90 && arm.getArmAngle() < 125){
         arm.extendPiston();
       }
     }
@@ -98,11 +106,12 @@ private double wristAngle;
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    RobotContainer.ArmState = currentState;
     if (!interrupted){
       lastState = currentState;
     }else {
       lastState = ArmStates.DEFAULT;
-      RobotContainer.ArmState = ArmStates.DEFAULT;
+     // RobotContainer.ArmState = ArmStates.DEFAULT;
     }
   }
 

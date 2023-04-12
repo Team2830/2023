@@ -28,8 +28,7 @@ public class WristManual extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    wrist.setMotorSpeed(input.getAsDouble() * 0.3);
-    System.out.println("Current Angle = " + wrist.getWristAngle());
+    wrist.setMotorSpeed(-input.getAsDouble() * 0.5);
   }
 
   // Called once the command ends or is interrupted.

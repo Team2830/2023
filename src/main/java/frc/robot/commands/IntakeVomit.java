@@ -6,7 +6,9 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.RobotStates;
 import frc.robot.subsystems.Intake;
 
 public class IntakeVomit extends CommandBase {
@@ -31,6 +33,7 @@ public class IntakeVomit extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     intake.setMotorSpeed(IntakeConstants.defaultSpeed);
+    RobotContainer.RobotState = RobotStates.IDLE;
   }
 
   // Returns true when the command should end.

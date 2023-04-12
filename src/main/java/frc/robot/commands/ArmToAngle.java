@@ -40,21 +40,22 @@ public class ArmToAngle extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (RobotContainer.ArmState == ArmStates.SUBSTATION){
-      calcAngle = Constants.ArmConstants.substationConeAngle + SmartDashboard.getNumber("Arm adjust", 0);
-    }
 
     if(RobotContainer.ArmState == ArmStates.HIGH){
-      if(arm.getArmAngle() > 90 && arm.getArmAngle() < 120){
+      if(arm.getArmAngle() > 80 && arm.getArmAngle() < 110){
         arm.extendPiston();
       }
     }
     arm.setArmAngle(calcAngle);
+    System.out.println("running");
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    arm.setArmAngle(arm.getArmAngle());
+    arm.setMotorSpeed(0);
+  }
 
   // Returns true when the command should end.
   @Override
