@@ -84,7 +84,7 @@ public class DriveAUto extends SequentialCommandGroup {
 
                 addCommands(
                                 new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
-                                new InstantCommand(() -> s_Swerve.zeroGyro()),
+                                new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                                 passCharge
                                 
                                 

@@ -114,7 +114,7 @@ public class TwoPieceAuto extends SequentialCommandGroup {
 
                 addCommands(
                                 new InstantCommand(() -> s_Swerve.resetOdometry(pickupTrajectory.getInitialPose())),
-                                new InstantCommand(() -> s_Swerve.zeroGyro()),
+                                new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                                 new InstantCommand(() -> arm.resetArm()),
                                 new DriveArmToPosition(arm, Constants.ArmConstants.highAngle, true),
                                 new WaitCommand(1.5),

@@ -26,9 +26,9 @@ public final class Constants {
 
                 public static final double angleError = 1;
 
-                public static final double substationCubeAngle = 10;
+                public static final double substationCubeAngle = 10.5;
                 public static final double substationConeAngle = 16.5; // 3:12pm 9.0
-                public static final double highAngle = 154.0; // 3:12pm 148
+                public static final double highAngle = 154.5; // 3:12pm 148
                 public static final double cubeHigh = 165.0;
 
                 public static final double midAngle = 176.0;
@@ -61,7 +61,7 @@ public final class Constants {
                 public static final double angleError = 1;
 
                 public static final double substationCubeAngle = -17.0;
-                public static final double substationAngle = -17.0; // 3:12pm 9.0
+                public static final double substationAngle = -16.0; // 3:12pm 9.0
                 public static final double highAngle = 75.0; // 3:12pm 148
                 public static final double cubeHigh = 80.0;
                 public static final double groundAngle = 33.0;
@@ -79,7 +79,7 @@ public final class Constants {
                 public static final double kP = .035;
                 public static final double kI = 0;
                 public static final double kD = 0;
-                public static final double kG = (.15 / 12);// (.3 / 12);
+                public static final double kG = (0 / 12);// (.15 / 12);
                 public static double allowableError = 10;
                 public final double kPeakOutput = 1.0;
 
@@ -91,10 +91,10 @@ public final class Constants {
                 public static final double defaultSpeed = 0;
                 public static final double intakeSpeed = 1;
                 public static final double holdSpeed = .1;
-                public static final double vomitSpeed = -1;
+                public static final double vomitSpeed = -.65;
                 public static final double vomitSeconds = .5;
 
-                public static final double intakeCurrent = 230;
+                public static final double intakeCurrent = 220;
         }
 
         public static enum RobotStates {
@@ -312,6 +312,7 @@ public final class Constants {
 
                 public static final double slewRate = 1.7; // 2.0
 
+                public static final double slowRate = .9;
                 public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
                 public static final COTSFalconSwerveConstants chosenModule = // TODO: This must be tuned to specific

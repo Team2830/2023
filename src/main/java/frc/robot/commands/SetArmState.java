@@ -81,7 +81,6 @@ private double wristAngle;
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    System.out.println("running");
     arm.setArmAngle(armAngle + SmartDashboard.getNumber("Arm adjust", 0));
 
     wrist.setWristAngle(wristAngle);

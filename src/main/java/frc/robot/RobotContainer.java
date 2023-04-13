@@ -132,7 +132,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro()));
+        zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(0)));
         alignToTarget.whileTrue(new ScoreAlignSwerve(s_Swerve, vision));
 
         intakeVomit.onTrue(new TimedVomit(intake).andThen(new InstantCommand(() -> arm.retractPiston(), arm)));
@@ -149,12 +149,10 @@ public class RobotContainer {
         armToMid.onTrue(new SetArmState(arm, wrist, ArmStates.MID));
                 
         armToCube.onTrue(new SetArmState( arm, wrist, ArmStates.CUBE))
-        .onTrue(new InstantCommand(() -> RobotState = RobotStates.INTAKE))
-        .onTrue(new InstantCommand(() -> intake.setMotorSpeed(IntakeConstants.intakeSpeed)));
+        .onTrue(new IntakeOn(intake));
 
         armToCone.onTrue(new SetArmState(arm, wrist, ArmStates.CONE))
-        .onTrue(new InstantCommand(() -> RobotState = RobotStates.INTAKE))
-        .onTrue(new InstantCommand(() -> intake.setMotorSpeed(IntakeConstants.intakeSpeed)));
+        .onTrue(new IntakeOn(intake));
 
         armHome.onTrue(new InstantCommand(() -> arm.retractPiston()))
                 .onTrue(new SetArmState(arm, wrist, ArmStates.HOME));

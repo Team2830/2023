@@ -27,7 +27,7 @@ public class Swerve extends SubsystemBase {
     public Swerve() {
         
         gyro = new AHRS();
-        zeroGyro();
+        zeroGyro(0);
 
         mSwerveMods = new SwerveModule[] {
             new SwerveModule(0, Constants.Swerve.Mod0.constants),
@@ -110,12 +110,11 @@ return speed;
         }
         return positions;
     }
-
-    // FIXME: This needs to account for what angle we started the match in.
+    
     // Teleop angle zero-ing should always be with the sponsor panel toward us
-    public void zeroGyro(){
+    public void zeroGyro(double startAngle){
         gyro.reset();
-        gyro.setAngleAdjustment(180);
+        gyro.setAngleAdjustment(startAngle + 180); //accounts for default swerve mod "front"
         gyro.getAngle();
     }
 

@@ -4,6 +4,9 @@
 
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
+
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
@@ -11,34 +14,44 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.RobotStates;
 import frc.robot.subsystems.Intake;
 
-public class IntakeVomit extends CommandBase {
+public class IntakeOn extends CommandBase {
   Intake intake;
+  private boolean isFinished = false;
+
   /** Creates a new IntakeVomit. */
-  public IntakeVomit(Intake intake) {
+  public IntakeOn(Intake intake) {
     this.intake = intake;
+    addRequirements(intake);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    intake.setMotorSpeed(IntakeConstants.vomitSpeed);
+    isFinished = false;
+    RobotContainer.RobotState = RobotStates.INTAKE;
+    intake.setMotorSpeed(Constants.IntakeConstants.intakeSpeed);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+
+  }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intake.setMotorSpeed(IntakeConstants.holdSpeed);
-    RobotContainer.RobotState = RobotStates.IDLE;
+    intake.setMotorSpeed(Constants.IntakeConstants.holdSpeed);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    if (intake.getCurrent() > Constants.IntakeConstants.intakeCurrent) {
+      isFinished = true;
+      RobotContainer.RobotState = RobotStates.HOLDING;
+    }
+    return (isFinished);
   }
 }

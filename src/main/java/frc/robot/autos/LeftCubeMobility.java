@@ -80,7 +80,7 @@ public class LeftCubeMobility extends SequentialCommandGroup {
                 addCommands(
                                 new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
                                 new InstantCommand(() -> arm.resetArm()),
-                                new InstantCommand(() -> s_Swerve.zeroGyro()),
+                                new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                                 new DriveArmToPosition(arm, Constants.ArmConstants.cubeHigh, true),
                                 new WaitCommand(1.5),
                                 new InstantCommand(() -> intake.intakeVomit(), intake),

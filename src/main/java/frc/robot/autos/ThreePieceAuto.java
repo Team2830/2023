@@ -154,7 +154,7 @@ public class ThreePieceAuto extends SequentialCommandGroup {
 
                 addCommands(
                                 new InstantCommand(() -> s_Swerve.resetOdometry(scoreToFloor4.getInitialPose())),
-                                new InstantCommand(() -> s_Swerve.zeroGyro()), // FIXME: Adjust this for the robot being 180 degrees different than normal
+                                new InstantCommand(() -> s_Swerve.zeroGyro(180)), 
                                 //new IntakeToggle(intake, () -> false),
                                 new ParallelDeadlineGroup(
                                                 new WaitCommand(.5),

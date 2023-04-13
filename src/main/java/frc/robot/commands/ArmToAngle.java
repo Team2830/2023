@@ -47,7 +47,6 @@ public class ArmToAngle extends CommandBase {
       }
     }
     arm.setArmAngle(calcAngle);
-    System.out.println("running");
   }
 
   // Called once the command ends or is interrupted.
