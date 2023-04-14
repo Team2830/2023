@@ -122,7 +122,7 @@ public final class Constants {
 
                 public static final double kPXController = 1;
                 public static final double kPYController = 1;
-                public static final double kPThetaController = .5;
+                public static final double kPThetaController = 1.1;
 
                 /* Constraint for the motion profilied robot angle controller */
                 public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
@@ -227,6 +227,12 @@ public final class Constants {
                 /*
                  * MISC
                  */
+                public static final Translation2d INSIDE_COMMUNITY_EXIT = new Translation2d(-Units.inchesToMeters(41),
+                                -Units.inchesToMeters(163));
+
+                public static final Translation2d INSIDE_CHARGE_CORNER = new Translation2d(-Units.inchesToMeters(136),
+                                -Units.inchesToMeters(163));
+
                 public static final Translation2d CUBE_MOBILITY = new Translation2d(-Units.inchesToMeters(170),
                                 -Units.inchesToMeters(170));
 
@@ -277,14 +283,16 @@ public final class Constants {
                 /*
                  * FLOOR PRESETS
                  */
-                public static final Translation2d FLOOR4 = new Translation2d(-Units.inchesToMeters(193),
-                                -Units.inchesToMeters(160.25)); // 160.25
+
                 public static final Translation2d FLOOR1 = new Translation2d(-Units.inchesToMeters(193),
                                 -Units.inchesToMeters(16.25));
                 public static final Translation2d FLOOR2 = new Translation2d(-Units.inchesToMeters(193),
                                 -Units.inchesToMeters(64.25));
                 public static final Translation2d FLOOR3 = new Translation2d(-Units.inchesToMeters(193),
                                 -Units.inchesToMeters(112.25));
+                public static final Translation2d FLOOR4 = new Translation2d(-Units.inchesToMeters(193),
+                                -Units.inchesToMeters(160.25)); // 160.25
+                public static final double FLOOR3_ANGLE = -35;
 
                 /**
                  * OLD SUCCESSFUL 2 PIECE VALUES
@@ -376,7 +384,8 @@ public final class Constants {
                 public static final double angleKF = chosenModule.angleKF;
 
                 /* Drive Motor PID Values */
-                public static final double driveKP = 0.00066572; // TODO: This must be tuned to specific robot
+                public static final double driveKP = 0.00055097;// 0.00066572; // TODO: This must be tuned to specific
+                                                                // robot
                 public static final double driveKI = 0.0;
                 public static final double driveKD = 0.0;
                 public static final double driveKF = 0.0;
@@ -386,13 +395,15 @@ public final class Constants {
                  * Divide SYSID values by 12 to convert from volts to percent output for CTRE
                  */
                 // FIXME: Tune for new drivetrain
-                public static final double driveKS = (0.061833 / 12); // TODO: This must be tuned to specific robot
-                public static final double driveKV = (2.8121 / 12);
-                public static final double driveKA = (1.2923 / 12);
+
+                public static final double driveKS = (0.21441 / 12); // TODO: This must be tuned to specific robot
+                public static final double driveKV = (1.9742 / 12);
+                public static final double driveKA = (0.68428 / 12);
 
                 /* Swerve Profiling Values */
                 /** Meters per Second */
-                public static final double maxSpeed = 4.5; // FIXME: This must be tuned to specific robot
+                public static final double maxSpeed = Units.feetToMeters(18); // FIXME: This must be tuned to specific
+                                                                              // robot
                 /** Radians per Second */
                 public static final double maxAngularVelocity = 11.5; // FIXME: This must be tuned to specific robot
 
@@ -406,7 +417,7 @@ public final class Constants {
                         public static final int driveMotorID = 1;
                         public static final int angleMotorID = 2;
                         public static final int canCoderID = 3;
-                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(309.46);// Rotation2d.fromDegrees(77.34+180);
+                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(314.296875);// Rotation2d.fromDegrees(77.34+180);
                         public static final SwerveModuleConstants constants = new SwerveModuleConstants(driveMotorID,
                                         angleMotorID,
                                         canCoderID, angleOffset);
@@ -417,7 +428,7 @@ public final class Constants {
                         public static final int driveMotorID = 4;
                         public static final int angleMotorID = 5;
                         public static final int canCoderID = 6;
-                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(157.58);// Rotation2d.fromDegrees(75.41+180);
+                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(157.15);// Rotation2d.fromDegrees(75.41+180);
                         public static final SwerveModuleConstants constants = new SwerveModuleConstants(driveMotorID,
                                         angleMotorID,
                                         canCoderID, angleOffset);
@@ -428,7 +439,7 @@ public final class Constants {
                         public static final int driveMotorID = 7;
                         public static final int angleMotorID = 8;
                         public static final int canCoderID = 9;
-                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(286.25);// Rotation2d.fromDegrees(276.50-180);
+                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(283.79);// Rotation2d.fromDegrees(276.50-180);
                         public static final SwerveModuleConstants constants = new SwerveModuleConstants(driveMotorID,
                                         angleMotorID,
                                         canCoderID, angleOffset);
@@ -439,7 +450,7 @@ public final class Constants {
                         public static final int driveMotorID = 10;
                         public static final int angleMotorID = 11;
                         public static final int canCoderID = 12;
-                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(161.71);// Rotation2d.fromDegrees(103.79+180);
+                        public static final Rotation2d angleOffset = Rotation2d.fromDegrees(161.98);// Rotation2d.fromDegrees(103.79+180);
                         public static final SwerveModuleConstants constants = new SwerveModuleConstants(driveMotorID,
                                         angleMotorID,
                                         canCoderID, angleOffset);

@@ -1,5 +1,7 @@
 package frc.robot;
 
+import com.ctre.phoenix.platform.can.AutocacheState;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -104,8 +106,10 @@ public class RobotContainer {
         //autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake));
         autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake));
         autoChooser.addOption("Red I_CU Three Piece", new ThreePieceAuto(s_Swerve, arm, intake, wrist));
+        autoChooser.addOption("Blue I_CU Three Piece", new FlippedThreePieceAuto(s_Swerve, arm, intake, wrist));
         //autoChooser.addOption("Blue I_CU Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
         //autoChooser.addOption("Auto Test", new DriveAUto(s_Swerve));
+        autoChooser.addOption("Example", new exampleAuto(s_Swerve));
 
         SmartDashboard.putData("autoChooser", autoChooser);
         s_Swerve.setDefaultCommand(

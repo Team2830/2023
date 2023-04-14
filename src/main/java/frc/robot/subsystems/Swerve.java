@@ -110,16 +110,16 @@ return speed;
         }
         return positions;
     }
-    
+
     // Teleop angle zero-ing should always be with the sponsor panel toward us
     public void zeroGyro(double startAngle){
         gyro.reset();
-        gyro.setAngleAdjustment(startAngle + 180); //accounts for default swerve mod "front"
+        gyro.setAngleAdjustment(startAngle); //accounts for default swerve mod "front"
         gyro.getAngle();
     }
 
     public Rotation2d getYaw() {
-        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw()/*  + 180*/) : Rotation2d.fromDegrees(gyro.getYaw()/* + 180*/);
+        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getAngle()) : Rotation2d.fromDegrees(gyro.getYaw());
     }
 
     // public Rotation2d getYaw() {
@@ -141,6 +141,7 @@ return speed;
 
     @Override
     public void periodic(){
+        SmartDashboard.putNumber("Swerve Yaw", getYaw().getDegrees());
         swerveOdometry.update(getYaw(), getModulePositions());  
         // System.out.println("Pitch: " + gyro.getPitch());
         // System.out.println("roll: " + gyro.getRoll());
