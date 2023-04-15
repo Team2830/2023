@@ -73,7 +73,7 @@ public class FlippedChargeAndMobility extends SequentialCommandGroup {
                 var thetaController = new ProfiledPIDController(
                                 Constants.AutoConstants.kPThetaController, 0, 0,
                                 Constants.AutoConstants.kThetaControllerConstraints);
-                thetaController.enableContinuousInput(-Math.PI, Math.PI);
+                //thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
                 SwerveControllerCommand passCharge = new SwerveControllerCommand(
                                 driveOnCharge,

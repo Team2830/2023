@@ -8,6 +8,7 @@ import frc.robot.Constants.WristConstants;
 import frc.robot.commands.ArmToAngle;
 import frc.robot.commands.AutoBalance;
 import frc.robot.commands.DriveArmToPosition;
+import frc.robot.commands.IntakeOn;
 import frc.robot.commands.IntakeToggle;
 import frc.robot.commands.SetArmState;
 import frc.robot.commands.TimedVomit;
@@ -47,7 +48,7 @@ public class FlippedThreePieceAuto extends SequentialCommandGroup {
                                 Constants.AutoConstants.kMaxSpeedMetersPerSecond,
                                 Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
                                 .setKinematics(Constants.Swerve.swerveKinematics)
-                                .setReversed(false);
+                                .setReversed(true);
 
                 TrajectoryConfig backwardConfig = new TrajectoryConfig(
                                 Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -57,21 +58,21 @@ public class FlippedThreePieceAuto extends SequentialCommandGroup {
                 // An example trajectory to follow. All units in meters.
                 Trajectory scoreToFloor4 = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
-                                List.of(new Pose2d(Constants.FlippedTranslations.INSIDE_CUBE,
-                                                Rotation2d.fromDegrees(180)),
+                                List.of(new Pose2d(Constants.FlippedTranslations.INSIDE_CONE1,
+                                                Rotation2d.fromDegrees(0)),
 
                                                 // new Pose2d(Constants.FlippedTranslations.INSIDE_CHARGE_CORNER,
-                                                //                 Rotation2d.fromDegrees(90)),
+                                                // Rotation2d.fromDegrees(90)),
                                                 // Interior Waypoints
                                                 // End 3 meters straight ahead of where we started, facing forward
                                                 new Pose2d(Constants.FlippedTranslations.FLOOR4,
                                                                 Rotation2d.fromDegrees(0))),
                                 forwardConfig);
-                Trajectory floor1ToCubeNode = TrajectoryGenerator.generateTrajectory(
+
+                Trajectory floor1ToCone1Node = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
                                 List.of(new Pose2d(Constants.FlippedTranslations.FLOOR4, Rotation2d.fromDegrees(0)),
-                                                new Pose2d(Constants.FlippedTranslations.INSIDE_COMMUNITY_EXIT,
-                                                                Rotation2d.fromDegrees(0)),
+
                                                 // Interior Waypoints
                                                 // End 3 meters straight ahead of where we started, facing forward
                                                 new Pose2d(Constants.FlippedTranslations.INSIDE_CONE1,
@@ -82,7 +83,7 @@ public class FlippedThreePieceAuto extends SequentialCommandGroup {
                                 // Start at the origin facing the +X direction
                                 List.of(new Pose2d(FlippedTranslations.INSIDE_CUBE, Rotation2d.fromDegrees(0)),
                                                 // new Pose2d(FlippedTranslations.INSIDE_COMMUNITY_EXIT,
-                                                //                 Rotation2d.fromDegrees(0)),
+                                                // Rotation2d.fromDegrees(0)),
                                                 // Interior Waypoints
                                                 // End 3 meters straight ahead of where we started, facing forward
                                                 new Pose2d(FlippedTranslations.INSIDE_CHARGE_CORNER,
@@ -91,7 +92,7 @@ public class FlippedThreePieceAuto extends SequentialCommandGroup {
                                                 new Pose2d(FlippedTranslations.FLOOR3,
                                                                 Rotation2d.fromDegrees(
                                                                                 FlippedTranslations.FLOOR3_ANGLE))),
-                                forwardConfig.setReversed(true));
+                                forwardConfig);
                 Trajectory floor2ToRightNode = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
                                 List.of(new Pose2d(FlippedTranslations.FLOOR3,
@@ -118,17 +119,18 @@ public class FlippedThreePieceAuto extends SequentialCommandGroup {
                                 new PIDController(Constants.AutoConstants.kPXController, 0, 0),
                                 new PIDController(Constants.AutoConstants.kPYController, 0, 0),
                                 thetaController,
-                               // () -> Rotation2d.fromDegrees(0),
+                                () -> Rotation2d.fromDegrees(0),
                                 s_Swerve::setModuleStates,
                                 s_Swerve);
 
                 SwerveControllerCommand scoreFloor4 = new SwerveControllerCommand(
-                                floor1ToCubeNode,
+                                floor1ToCone1Node,
                                 s_Swerve::getPose,
                                 Constants.Swerve.swerveKinematics,
                                 new PIDController(Constants.AutoConstants.kPXController, 0, 0),
                                 new PIDController(Constants.AutoConstants.kPYController, 0, 0),
                                 thetaController,
+                                () -> Rotation2d.fromDegrees(0),
                                 s_Swerve::setModuleStates,
                                 s_Swerve);
 
@@ -156,22 +158,28 @@ public class FlippedThreePieceAuto extends SequentialCommandGroup {
                  */
 
                 addCommands(
-                                new InstantCommand(() -> s_Swerve.zeroGyro(180)),
+                                new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                                 new InstantCommand(() -> s_Swerve.resetOdometry(scoreToFloor4.getInitialPose())),
 
-                                // new IntakeToggle(intake, () -> false),
-                                // new ParallelDeadlineGroup(
-                                //                 new WaitCommand(.5),
-                                //                 new ArmToAngle(arm, ArmConstants.homeAngle),
-                                //                 new WristToAngle(wrist, WristConstants.homeAngle)),
-                                // new TimedVomit(intake),
-                                // new ParallelDeadlineGroup(
-                                                pickupFloor4 //,
-                                                // new ArmToAngle(arm, ArmConstants.homeAngle),
-                                                // new WristToAngle(wrist, WristConstants.groundAngle),
-                                                // new SequentialCommandGroup(new WaitCommand(1), // TODO tune to when
-                                                //                                                // angle is good
-                                                //                 new InstantCommand(() -> arm.extendPiston())))
+                                new ParallelDeadlineGroup(new WaitCommand(.5),
+                                                new IntakeToggle(intake, () -> false)), // SUCK
+                                new ParallelDeadlineGroup(
+                                                new WaitCommand(3),
+                                                new SetArmState(arm, wrist, ArmStates.HIGH)),
+                                new TimedVomit(intake),
+                                new InstantCommand(() -> arm.retractPiston()),
+                                new ParallelDeadlineGroup(
+                                                new WaitCommand(1.5),
+                                                new SetArmState(arm, wrist, ArmStates.HOME)),
+                                                new InstantCommand(() -> arm.extendPiston()),
+                                new ParallelDeadlineGroup(
+                                                pickupFloor4,
+                                                new SequentialCommandGroup(new WaitCommand(1), // TODO tune to when
+                                                                new IntakeOn(intake)),
+                                                new SetArmState(arm, wrist, ArmStates.HOME)),
+                                new WaitCommand(1),
+                                new InstantCommand(() -> arm.retractPiston()),
+                                scoreFloor4
                 // ,
 
                 // scoreFloor4,

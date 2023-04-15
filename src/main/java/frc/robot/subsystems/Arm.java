@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ArmStates;
 
 public class Arm extends SubsystemBase {
@@ -73,7 +74,7 @@ public class Arm extends SubsystemBase {
   public double getArmAngle() {
     //double armSensorValue = leftMotor.getSelectedSensorPosition();
     //return armSensorValue * 360 / (2048 * 300) + Constants.ArmConstants.startAngle;
-    return -encoder.getDistance() + 61 - angleOffset;
+    return -encoder.getDistance() - ArmConstants.encoderZeroValue + angleOffset;
   }
 
   public void setArmAngle(double angle){

@@ -1,12 +1,17 @@
 package frc.robot.autos;
 
 import frc.robot.Constants;
+import frc.robot.Constants.ArmStates;
 import frc.robot.Constants.Translations;
 import frc.robot.commands.AutoBalance;
 import frc.robot.commands.DriveArmToPosition;
+import frc.robot.commands.IntakeToggle;
+import frc.robot.commands.SetArmState;
+import frc.robot.commands.TimedVomit;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Wrist;
 
 import java.util.List;
 
@@ -26,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class CubeCharge extends SequentialCommandGroup {
-        public CubeCharge(Swerve s_Swerve, Arm arm, Intake intake) {
+        public CubeCharge(Swerve s_Swerve, Arm arm, Intake intake, Wrist wrist) {
 
                 /*
                  * 
@@ -35,19 +40,19 @@ public class CubeCharge extends SequentialCommandGroup {
                  */
 
                 TrajectoryConfig forwardConfig = new TrajectoryConfig(
-                                Constants.AutoConstants.kMaxSpeedMetersPerSecond * .55,
+                                Constants.AutoConstants.kMaxSpeedMetersPerSecond * .65,
                                 Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
                                 .setKinematics(Constants.Swerve.swerveKinematics)
                                 .setReversed(true);
 
                 TrajectoryConfig slowForwardConfig = new TrajectoryConfig(
-                                Constants.AutoConstants.kMaxSpeedMetersPerSecond * .3,
+                                Constants.AutoConstants.kMaxSpeedMetersPerSecond * .4,
                                 Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
                                 .setKinematics(Constants.Swerve.swerveKinematics)
                                 .setReversed(true);
 
                 TrajectoryConfig backwardConfig = new TrajectoryConfig(
-                                Constants.AutoConstants.kMaxSpeedMetersPerSecond * .55,
+                                Constants.AutoConstants.kMaxSpeedMetersPerSecond * .65,
                                 Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
                                 .setKinematics(Constants.Swerve.swerveKinematics);
 
@@ -78,7 +83,7 @@ public class CubeCharge extends SequentialCommandGroup {
                                 List.of(new Pose2d(Constants.Translations.CHARGE_PAST_CENTER,
                                                 Rotation2d.fromDegrees(0)),
 
-                                                new Pose2d(Constants.Translations.CHARGE_CENTER,
+                                                new Pose2d(Constants.Translations.CHARGE_NEAR_CENTER,
                                                                 Rotation2d.fromDegrees(0))),
                                 // Interior Waypoints
                                 // End 3 meters straight ahead of where we started, facing forward
@@ -99,7 +104,7 @@ public class CubeCharge extends SequentialCommandGroup {
                                 thetaController,
                                 s_Swerve::setModuleStates,
                                 s_Swerve);
-                SwerveControllerCommand offCharge = new SwerveControllerCommand(
+                SwerveControllerCommand mobility = new SwerveControllerCommand(
                                 driveOffCharge,
                                 s_Swerve::getPose,
                                 Constants.Swerve.swerveKinematics,
@@ -118,41 +123,27 @@ public class CubeCharge extends SequentialCommandGroup {
                                 s_Swerve::setModuleStates,
                                 s_Swerve);
 
-                /*
-                 * Intake Commands
-                 */
-
-                InstantCommand intakeVomit = new InstantCommand(() -> intake.intakeVomit(), intake);
-
-                /*
-                 * Arm Commands
-                 */
-
-                DriveArmToPosition armToHigh = new DriveArmToPosition(arm, Constants.ArmConstants.highAngle, true);
-
-                DriveArmToPosition armToHome = new DriveArmToPosition(arm, Constants.ArmConstants.homeAngle, false);
-
-                InstantCommand extendArm = new InstantCommand(() -> arm.extendPiston(), arm);
-
-                InstantCommand retractArm = new InstantCommand(() -> arm.retractPiston(), arm);
-
-                AutoBalance chargeBalance = new AutoBalance(s_Swerve);
-
                 addCommands(
-                                new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
-                                new InstantCommand(() -> arm.resetArm()),
                                 new InstantCommand(() -> s_Swerve.zeroGyro(0)),
-                                new DriveArmToPosition(arm, Constants.ArmConstants.cubeHigh, true),
-                                new WaitCommand(1.5),
-                                new InstantCommand(() -> intake.intakeVomit(), intake),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> arm.retractPiston(), arm),
+                                new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
+                                new ParallelDeadlineGroup(new WaitCommand(.3),
+                                                new IntakeToggle(intake, () -> false)), // SUCK
+                                new ParallelDeadlineGroup(
+                                                new WaitCommand(2),
+                                                new SetArmState(arm, wrist, ArmStates.MID)),
+                                new TimedVomit(intake),
+                                new InstantCommand(() -> arm.retractPiston()),
+                                new ParallelDeadlineGroup(
+                                                new WaitCommand(1),
+                                                new SetArmState(arm, wrist, ArmStates.HOME)),
+                                new ParallelDeadlineGroup(
+                                                onCharge,
+                                                new SetArmState(arm, wrist, ArmStates.HOME)),
 
-                                new ParallelDeadlineGroup(onCharge, armToHome),
-                                // offCharge,
-                                // new WaitCommand(.5),
-                                // toCharge,
-                                chargeBalance
+                                mobility,
+                                new WaitCommand(.5),
+                                toCharge,
+                                new AutoBalance(s_Swerve)
 
                 // chargeBalance
 

@@ -42,14 +42,15 @@ private double wristAngle;
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    armFlip = arm.getArmSide(currentState) != arm.getArmSide(lastState);
+    // armFlip = arm.getArmSide(currentState) != arm.getArmSide(lastState);
 
-    if(armFlip){
-      wrist.setWristAngle(WristConstants.flipAngle);
-    }
+    // if(armFlip){
+    //   wrist.setWristAngle(WristConstants.flipAngle);
+    // }
     if(currentState == ArmStates.CHECK){
       currentState = RobotContainer.ArmState;
     }
+    RobotContainer.ArmState = currentState;
 
     switch (currentState){
       case HIGH:
@@ -74,6 +75,10 @@ private double wristAngle;
       case CUBE:
       armAngle = ArmConstants.substationCubeAngle; 
       wristAngle = WristConstants.substationAngle;
+      break;
+      case DEFAULT:
+      armAngle = arm.getArmAngle();
+      wristAngle = wrist.getWristAngle();
       break;
     }
   }
@@ -105,7 +110,8 @@ private double wristAngle;
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    RobotContainer.ArmState = currentState;
+    wrist.setMotorSpeed(0);
+    arm.setMotorSpeed(0);
     if (!interrupted){
       lastState = currentState;
     }else {

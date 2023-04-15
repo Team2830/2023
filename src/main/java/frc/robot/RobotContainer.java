@@ -104,8 +104,8 @@ public class RobotContainer {
         //autoChooser.addOption("Mobility", new Mobility(s_Swerve, arm, intake));
         //autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake));
         //autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake));
-        autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake));
-        autoChooser.addOption("Red I_CU Three Piece", new ThreePieceAuto(s_Swerve, arm, intake, wrist));
+        autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake, wrist));
+        autoChooser.addOption("Red I_CU Three Piece", new OldThreePieceAuto(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("Blue I_CU Three Piece", new FlippedThreePieceAuto(s_Swerve, arm, intake, wrist));
         //autoChooser.addOption("Blue I_CU Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
         //autoChooser.addOption("Auto Test", new DriveAUto(s_Swerve));
@@ -118,8 +118,8 @@ public class RobotContainer {
                         () -> driver.getRawAxis(translationAxis),
                         () -> driver.getRawAxis(strafeAxis),
                         () -> driver.getRawAxis(rotationAxis),
-                        () -> turnToForward.getAsBoolean(),
                         () -> turnToBackward.getAsBoolean(),
+                        () -> turnToForward.getAsBoolean(),
                         () -> slowMode.getAsBoolean()));
 
         // Configure the button bindings
@@ -178,6 +178,6 @@ public class RobotContainer {
         // return new AutoBalance(s_Swerve);
         // return new TwoPieceAuto(s_Swerve, arm, intake);
         // return new ChargeAndMobility(s_Swerve,arm,intake);
-        return autoChooser.getSelected();
+       return autoChooser.getSelected();
     }
 }

@@ -1,11 +1,15 @@
 package frc.robot.autos;
 
 import frc.robot.Constants;
+import frc.robot.Constants.ArmStates;
 import frc.robot.Constants.Translations;
 import frc.robot.commands.DriveArmToPosition;
+import frc.robot.commands.SetArmState;
+import frc.robot.commands.TimedVomit;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Wrist;
 
 import java.util.List;
 
@@ -25,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class LeftCubeMobility extends SequentialCommandGroup {
-        public LeftCubeMobility(Swerve s_Swerve, Arm arm, Intake intake) {
+        public LeftCubeMobility(Swerve s_Swerve, Arm arm, Intake intake, Wrist wrist) {
 
                 /*
                  * 
@@ -78,16 +82,18 @@ public class LeftCubeMobility extends SequentialCommandGroup {
                  */
 
                 addCommands(
-                                new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
-                                new InstantCommand(() -> arm.resetArm()),
-                                new InstantCommand(() -> s_Swerve.zeroGyro(0)),
-                                new DriveArmToPosition(arm, Constants.ArmConstants.cubeHigh, true),
-                                new WaitCommand(1.5),
-                                new InstantCommand(() -> intake.intakeVomit(), intake),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> arm.retractPiston(), arm),
+                        new InstantCommand(() -> s_Swerve.zeroGyro(0)),
+                        new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
+                        new ParallelDeadlineGroup(
+                                        new WaitCommand(3),
+                                        new SetArmState(arm, wrist, ArmStates.MID)),
+                        new TimedVomit(intake),
+                        new InstantCommand(() -> arm.retractPiston()),
+                        new ParallelDeadlineGroup(
+                                        new WaitCommand(2),
+                                        new SetArmState(arm, wrist, ArmStates.HOME)),
                                 new ParallelDeadlineGroup(mobility,
-                                                new DriveArmToPosition(arm, Constants.ArmConstants.homeAngle, false))
+                                                new SetArmState(arm, wrist, ArmStates.HOME))
 
                 // chargeBalance
 

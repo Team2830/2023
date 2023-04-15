@@ -28,11 +28,11 @@ public class AutoBalance extends CommandBase {
         double roll = s_Swerve.getRoll() / maxRoll;
 
         roll = MathUtil.clamp(roll, -1, 1);
-        if (Math.abs(s_Swerve.getRoll()) > 18) { 
+        if (Math.abs(s_Swerve.getRoll()) > 14) { 
             driveSpeed = (Math.signum(roll) * roll * roll) * .5;
         }
-        else if (Math.abs(s_Swerve.getRoll()) > 3) {
-            driveSpeed = (Math.signum(roll) * roll * roll) * .18; // Cube instead of square?
+        else if (Math.abs(s_Swerve.getRoll()) > 2) {
+            driveSpeed = (Math.signum(roll) * roll * roll) * .21; // Cube instead of square?
         } else {
             driveSpeed = 0;
         }

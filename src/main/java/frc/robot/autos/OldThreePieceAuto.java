@@ -8,7 +8,6 @@ import frc.robot.Constants.WristConstants;
 import frc.robot.commands.ArmToAngle;
 import frc.robot.commands.AutoBalance;
 import frc.robot.commands.DriveArmToPosition;
-import frc.robot.commands.IntakeOn;
 import frc.robot.commands.IntakeToggle;
 import frc.robot.commands.SetArmState;
 import frc.robot.commands.TimedVomit;
@@ -35,11 +34,11 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-public class ThreePieceAuto extends SequentialCommandGroup {
-        public ThreePieceAuto(Swerve s_Swerve, Arm arm, Intake intake, Wrist wrist) {
+public class OldThreePieceAuto extends SequentialCommandGroup {
+        public OldThreePieceAuto(Swerve s_Swerve, Arm arm, Intake intake, Wrist wrist) {
 
                 /*
-                 *
+                 * 
                  * Drive Commands
                  * 
                  */
@@ -58,21 +57,20 @@ public class ThreePieceAuto extends SequentialCommandGroup {
                 // An example trajectory to follow. All units in meters.
                 Trajectory scoreToFloor4 = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
-                                List.of(new Pose2d(Constants.Translations.INSIDE_CONE1,
-                                                Rotation2d.fromDegrees(0)),
+                                List.of(new Pose2d(Constants.Translations.INSIDE_CUBE, Rotation2d.fromDegrees(0)),
 
-                                                // new Pose2d(Constants.Translations.INSIDE_CHARGE_CORNER,
-                                                // Rotation2d.fromDegrees(90)),
+                                                new Pose2d(Constants.Translations.INSIDE_CHARGE_CORNER,
+                                                                Rotation2d.fromDegrees(80)),
                                                 // Interior Waypoints
                                                 // End 3 meters straight ahead of where we started, facing forward
                                                 new Pose2d(Constants.Translations.FLOOR4,
-                                                                Rotation2d.fromDegrees(0))),
+                                                                Rotation2d.fromDegrees(90))),
                                 forwardConfig);
-
-                Trajectory floor1ToCone1Node = TrajectoryGenerator.generateTrajectory(
+                Trajectory floor1ToCubeNode = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
                                 List.of(new Pose2d(Constants.Translations.FLOOR4, Rotation2d.fromDegrees(0)),
-
+                                                new Pose2d(Constants.Translations.INSIDE_COMMUNITY_EXIT,
+                                                                Rotation2d.fromDegrees(0)),
                                                 // Interior Waypoints
                                                 // End 3 meters straight ahead of where we started, facing forward
                                                 new Pose2d(Constants.Translations.INSIDE_CONE1,
@@ -82,17 +80,16 @@ public class ThreePieceAuto extends SequentialCommandGroup {
                 Trajectory scoreToFloor2 = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
                                 List.of(new Pose2d(Translations.INSIDE_CUBE, Rotation2d.fromDegrees(0)),
-                                                // new Pose2d(Translations.INSIDE_COMMUNITY_EXIT,
-                                                // Rotation2d.fromDegrees(0)),
+                                                new Pose2d(Translations.INSIDE_COMMUNITY_EXIT,
+                                                                Rotation2d.fromDegrees(0)),
                                                 // Interior Waypoints
                                                 // End 3 meters straight ahead of where we started, facing forward
                                                 new Pose2d(Translations.INSIDE_CHARGE_CORNER,
                                                                 Rotation2d.fromDegrees(0)),
 
                                                 new Pose2d(Translations.FLOOR3,
-                                                                Rotation2d.fromDegrees(
-                                                                                Translations.FLOOR3_ANGLE))),
-                                forwardConfig.setReversed(true));
+                                                                Rotation2d.fromDegrees(Translations.FLOOR3_ANGLE))),
+                                forwardConfig);
                 Trajectory floor2ToRightNode = TrajectoryGenerator.generateTrajectory(
                                 // Start at the origin facing the +X direction
                                 List.of(new Pose2d(Translations.FLOOR3,
@@ -110,7 +107,7 @@ public class ThreePieceAuto extends SequentialCommandGroup {
                 var thetaController = new ProfiledPIDController(
                                 Constants.AutoConstants.kPThetaController, 0, 0,
                                 Constants.AutoConstants.kThetaControllerConstraints);
-                thetaController.enableContinuousInput(-Math.PI, Math.PI);
+                //thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
                 SwerveControllerCommand pickupFloor4 = new SwerveControllerCommand(
                                 scoreToFloor4,
@@ -119,18 +116,16 @@ public class ThreePieceAuto extends SequentialCommandGroup {
                                 new PIDController(Constants.AutoConstants.kPXController, 0, 0),
                                 new PIDController(Constants.AutoConstants.kPYController, 0, 0),
                                 thetaController,
-                                () -> Rotation2d.fromDegrees(0),
                                 s_Swerve::setModuleStates,
                                 s_Swerve);
 
                 SwerveControllerCommand scoreFloor4 = new SwerveControllerCommand(
-                                floor1ToCone1Node,
+                                floor1ToCubeNode,
                                 s_Swerve::getPose,
                                 Constants.Swerve.swerveKinematics,
                                 new PIDController(Constants.AutoConstants.kPXController, 0, 0),
                                 new PIDController(Constants.AutoConstants.kPYController, 0, 0),
                                 thetaController,
-                                () -> Rotation2d.fromDegrees(0),
                                 s_Swerve::setModuleStates,
                                 s_Swerve);
 
@@ -158,47 +153,37 @@ public class ThreePieceAuto extends SequentialCommandGroup {
                  */
 
                 addCommands(
-                                new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                                 new InstantCommand(() -> s_Swerve.resetOdometry(scoreToFloor4.getInitialPose())),
-
-                                new ParallelDeadlineGroup(new WaitCommand(.5),
-                                                new IntakeToggle(intake, () -> false)), // SUCK
+                                new InstantCommand(() -> s_Swerve.zeroGyro(180)),
                                 new ParallelDeadlineGroup(
-                                                new WaitCommand(3),
-                                                new SetArmState(arm, wrist, ArmStates.HIGH)),
+                                                new WaitCommand(.5),
+                                                new ArmToAngle(arm, ArmConstants.homeAngle),
+                                                new WristToAngle(wrist, WristConstants.homeAngle)),
                                 new TimedVomit(intake),
-                                new InstantCommand(() -> arm.retractPiston()),
-                                new ParallelDeadlineGroup(
-                                                new WaitCommand(1.5),
-                                                new SetArmState(arm, wrist, ArmStates.HOME)),
-                                                new InstantCommand(() -> arm.extendPiston()),
                                 new ParallelDeadlineGroup(
                                                 pickupFloor4,
-                                                new SequentialCommandGroup(new WaitCommand(1), // TODO tune to when
-                                                                new IntakeOn(intake)),
-                                                new SetArmState(arm, wrist, ArmStates.HOME)),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> arm.retractPiston()),
-                                scoreFloor4
-                // ,
+                                                new ArmToAngle(arm, ArmConstants.homeAngle),
+                                                new WristToAngle(wrist, WristConstants.groundAngle),
+                                                new SequentialCommandGroup(new WaitCommand(1), 
+                                                                new InstantCommand(() -> arm.extendPiston())))
 
-                // scoreFloor4,
-                // new ParallelDeadlineGroup(new WaitCommand(2),
-                // new SetArmState(arm, wrist, ArmStates.MID)),
-                // new TimedVomit(intake),
+                                // scoreFloor4,
+                                // new ParallelDeadlineGroup(new WaitCommand(2),
+                                //                 new SetArmState(arm, wrist, ArmStates.MID)),
+                                // new TimedVomit(intake),
 
-                // new ParallelDeadlineGroup(
-                // pickupFloor3,
-                // new ArmToAngle(arm, ArmConstants.homeAngle),
-                // new WristToAngle(wrist, WristConstants.groundAngle),
-                // new SequentialCommandGroup(new WaitCommand(1), // TODO tune to when
-                // // angle is good
-                // new InstantCommand(() -> arm.extendPiston()))),
-                // // do intake things
-                // scoreFloor3,
-                // new ParallelDeadlineGroup(new WaitCommand(2),
-                // new SetArmState(arm, wrist, ArmStates.MID)),
-                // new TimedVomit(intake)
+                                // new ParallelDeadlineGroup(
+                                //                 pickupFloor3,
+                                //                 new ArmToAngle(arm, ArmConstants.homeAngle),
+                                //                 new WristToAngle(wrist, WristConstants.groundAngle),
+                                //                 new SequentialCommandGroup(new WaitCommand(1), // TODO tune to when
+                                //                                                                // angle is good
+                                //                                 new InstantCommand(() -> arm.extendPiston()))),
+                                // // do intake things
+                                // scoreFloor3,
+                                // new ParallelDeadlineGroup(new WaitCommand(2),
+                                //                 new SetArmState(arm, wrist, ArmStates.MID)),
+                                // new TimedVomit(intake)
 
                 // do score things
 

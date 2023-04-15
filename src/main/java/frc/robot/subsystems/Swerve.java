@@ -42,7 +42,7 @@ public class Swerve extends SubsystemBase {
         Timer.delay(1.0);
         resetModulesToAbsolute();
 
-        swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getModulePositions());
+        swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getAngle(), getModulePositions());
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
@@ -52,7 +52,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation, 
-                                    getYaw()
+                                    getAngle()
                                 )
                                 : new ChassisSpeeds(
                                     translation.getX(), 
@@ -92,7 +92,7 @@ return speed;
     }
 
     public void resetOdometry(Pose2d pose) {
-        swerveOdometry.resetPosition(getYaw(), getModulePositions(), pose);
+        swerveOdometry.resetPosition(getAngle(), getModulePositions(), pose);
     }
 
     public SwerveModuleState[] getModuleStates(){
@@ -114,17 +114,28 @@ return speed;
     // Teleop angle zero-ing should always be with the sponsor panel toward us
     public void zeroGyro(double startAngle){
         gyro.reset();
-        gyro.setAngleAdjustment(startAngle); //accounts for default swerve mod "front"
+        gyro.setAngleAdjustment(-startAngle); //accounts for default swerve mod "front"
         gyro.getAngle();
     }
 
-    public Rotation2d getYaw() {
-        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getAngle()) : Rotation2d.fromDegrees(gyro.getYaw());
+    /**
+     * Returns the continuous tracked rotation of the robot. No practical bounds.
+     */
+    public Rotation2d getAngle() {
+        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(-gyro.getAngle()) : Rotation2d.fromDegrees(gyro.getYaw());
     }
 
-    // public Rotation2d getYaw() {
-    //     return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
-    // }
+    /**
+     * Gets the gyro yaw angle from 0 to 360
+     * @return gyro yaw
+     */
+    public double getYaw() {
+        double yawIn = gyro.getYaw();
+        if (yawIn < 0){
+            yawIn += 360;
+        }
+        return yawIn;
+    }
 
     public double getPitch() {
         return gyro.getPitch();
@@ -141,8 +152,8 @@ return speed;
 
     @Override
     public void periodic(){
-        SmartDashboard.putNumber("Swerve Yaw", getYaw().getDegrees());
-        swerveOdometry.update(getYaw(), getModulePositions());  
+        SmartDashboard.putNumber("Swerve Yaw", getAngle().getDegrees());
+        swerveOdometry.update(getAngle(), getModulePositions());  
         // System.out.println("Pitch: " + gyro.getPitch());
         // System.out.println("roll: " + gyro.getRoll());
         // System.out.println("yaw: " + gyro.getYaw());
