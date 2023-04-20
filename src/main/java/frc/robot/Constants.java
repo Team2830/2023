@@ -17,6 +17,15 @@ import frc.robot.subsystems.Intake;
 public final class Constants {
         public static final double stickDeadband = 0.1;
 
+        public static final class VisionConstants{
+                public static final double limelightHeight = 36.25;
+                public static final double targetHeight = 16.5; //Inches
+                public static final double nodeOneOffset = -22;
+                public static final double nodeThreeOffset = 22;
+                public static final double tagDistanceRight = .51; // METERS
+                public static final double tagDistanceLeft = -.57; // METERS
+        }
+
         public static final class ArmConstants {
                 public static final double encoderZeroValue = 59.5;
                 public static final int climberRMotorID = 14;
@@ -69,6 +78,7 @@ public final class Constants {
                 public static final double shootAngle = 100.0;
 
                 public static final double midAngle = 89.0;
+                public static final double travelAngle = 89.0;
 
                 public static final double homeAngle = 47;
                 public static final double coneAngle = 39;
@@ -92,7 +102,7 @@ public final class Constants {
                 public static final double defaultSpeed = 0;
                 public static final double intakeSpeed = 1;
                 public static final double holdSpeed = .1;
-                public static final double vomitSpeed = -.65;
+                public static final double vomitSpeed = -.6;
                 public static final double vomitSeconds = .5;
 
                 public static final double intakeCurrent = 220;
@@ -158,7 +168,7 @@ public final class Constants {
                  */
                 public static final Translation2d CHARGE_PAST_LEFT = new Translation2d(-Units.inchesToMeters(180),
                                 Units.inchesToMeters(66));
-                public static final Translation2d CHARGE_PAST_CENTER = new Translation2d(-Units.inchesToMeters(195),
+                public static final Translation2d CHARGE_PAST_CENTER = new Translation2d(-Units.inchesToMeters(184),
                                 Units.inchesToMeters(88));
 
                 public static final Translation2d CHARGE_CENTER = new Translation2d(-Units.inchesToMeters(90),
@@ -318,7 +328,7 @@ public final class Constants {
                 public static final double maxRotationalSpeed = .4;
 
                 // Vision Constants
-                public static final double visionAlignConstant = -0.0075;
+                public static final double visionAlignConstant = 2;
 
                 // ----
 

@@ -42,7 +42,7 @@ private double wristAngle;
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // armFlip = arm.getArmSide(currentState) != arm.getArmSide(lastState);
+    armFlip = arm.getArmSide(currentState) != arm.getArmSide(lastState);
 
     // if(armFlip){
     //   wrist.setWristAngle(WristConstants.flipAngle);
@@ -88,17 +88,20 @@ private double wristAngle;
   public void execute() {
     arm.setArmAngle(armAngle + SmartDashboard.getNumber("Arm adjust", 0));
 
-    wrist.setWristAngle(wristAngle);
+    
 
-    // if (armFlip) {
-    //   if (!arm.getArmSide(lastState) && arm.getArmAngle() > 100){
-    //     armFlip = false;
-    //   } else if (arm.getArmSide(lastState) && arm.getArmAngle() < 80) {
-    //     armFlip = false;
-    //   }
-    // } else {
-    //  wrist.setWristAngle(0); //wristAngle
-    // }
+    if (armFlip) {
+      wrist.setWristAngle(WristConstants.travelAngle);
+      if (!arm.getArmSide(lastState) && arm.getArmAngle() > 100){
+        armFlip = false;
+        System.out.println("TURN OFF FLIP");
+      } else if (arm.getArmSide(lastState) && arm.getArmAngle() < 80) {
+        armFlip = false;
+        System.out.println("TURN OFF FLIP");
+      }
+    } else {
+      wrist.setWristAngle(wristAngle); //wristAngle
+    }
 
     if (currentState == ArmStates.HIGH){
       if (arm.getArmAngle() > 90 && arm.getArmAngle() < 125){
@@ -112,12 +115,8 @@ private double wristAngle;
   public void end(boolean interrupted) {
     wrist.setMotorSpeed(0);
     arm.setMotorSpeed(0);
-    if (!interrupted){
       lastState = currentState;
-    }else {
-      lastState = ArmStates.DEFAULT;
      // RobotContainer.ArmState = ArmStates.DEFAULT;
-    }
   }
 
   // Returns true when the command should end.

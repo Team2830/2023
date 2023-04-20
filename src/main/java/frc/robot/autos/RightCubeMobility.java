@@ -3,7 +3,9 @@ package frc.robot.autos;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmStates;
 import frc.robot.Constants.Translations;
+import frc.robot.commands.ArmToAngle;
 import frc.robot.commands.DriveArmToPosition;
+import frc.robot.commands.IntakeToggle;
 import frc.robot.commands.IntakeVomit;
 import frc.robot.commands.SetArmState;
 import frc.robot.commands.TimedVomit;
@@ -85,9 +87,12 @@ public class RightCubeMobility extends SequentialCommandGroup {
                 addCommands(
                         new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                         new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
+                        new ParallelDeadlineGroup(new WaitCommand(.3),
+                        new IntakeToggle(intake, () -> false),   // SUCK
+                       new ArmToAngle(arm, -30)),
                         new ParallelDeadlineGroup(
                                         new WaitCommand(3),
-                                        new SetArmState(arm, wrist, ArmStates.MID)),
+                                        new SetArmState(arm, wrist, ArmStates.HIGH)),
                         new TimedVomit(intake),
                         new InstantCommand(() -> arm.retractPiston()),
                         new ParallelDeadlineGroup(
@@ -97,7 +102,7 @@ public class RightCubeMobility extends SequentialCommandGroup {
                                                 new DriveArmToPosition(arm, Constants.ArmConstants.homeAngle, false))
 
                 // chargeBalance
-
+   
                 );
         }
 }

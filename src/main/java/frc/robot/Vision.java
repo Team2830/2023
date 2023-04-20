@@ -10,6 +10,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.VisionConstants;
 
 public class Vision {
     PhotonCamera m_Camera;
@@ -17,11 +19,11 @@ public class Vision {
 
     public Vision() {
         m_Camera = new PhotonCamera("OV5647");
-        m_Camera.setLED(VisionLEDMode.kOn);
     }
 
     public void processVision() {
         m_Result = m_Camera.getLatestResult();
+        SmartDashboard.putBoolean("has Target", isTargetPresent());
 
        // System.out.println("Camera is Connected: " + m_Camera.isConnected());
     }
@@ -31,9 +33,38 @@ public class Vision {
         return m_Result.hasTargets();
     }
 
+    public double getTargetY(){
+        PhotonTrackedTarget target = m_Result.getBestTarget();
+        SmartDashboard.putNumber("Target Y", target.getBestCameraToTarget().getY());
+        return target.getBestCameraToTarget().getY();
+    }
+
     public double getTargetYaw() {
         PhotonTrackedTarget target = m_Result.getBestTarget();
         return target.getYaw();
+    }
+
+    public double getTargetPitch() {
+        PhotonTrackedTarget target = m_Result.getBestTarget();
+        return target.getPitch();
+    }
+
+    /**
+     * Calculates the left/right distance
+     */
+    public double getYDistance(){
+        return (VisionConstants.limelightHeight - VisionConstants.targetHeight) / Math.sin(getTargetPitch());
+    }
+
+    /**
+     * Calculates the forward/backward distance
+     */
+    public double getXDistance(){
+        return getYDistance() * Math.tan(getTargetYaw());
+    }
+
+    public double getXDistance(double offset){
+        return (getYDistance() * Math.tan(getTargetYaw())) + offset;
     }
 
     public double getHighYaw() {
@@ -77,12 +108,12 @@ public class Vision {
         return closest;
     }
 
-    public double calculateStrafe(double targetYaw, boolean inRange) {
+    public double calculateStrafe(double error, boolean inRange) {
         double strafeVal = 0;
 
 
         if (!inRange){
-            strafeVal = (targetYaw) * Constants.Swerve.visionAlignConstant;
+            strafeVal = (error) * Constants.Swerve.visionAlignConstant;
             strafeVal = MathUtil.clamp(strafeVal, -.3, .3);    
         }
        

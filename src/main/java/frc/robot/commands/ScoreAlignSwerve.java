@@ -11,65 +11,80 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-
-public class ScoreAlignSwerve extends CommandBase {    
-    private Swerve s_Swerve;  
-    private Vision s_Vision; 
-    private double goalYaw = .7;
+public class ScoreAlignSwerve extends CommandBase {
+    private Swerve s_Swerve;
+    private Vision s_Vision;
+    private double goalDistance = 1;
     private boolean drive;
-    
-    public ScoreAlignSwerve(Swerve s_Swerve, Vision s_Vision) {
+    private double targetSide;
+    private double initialY = 0;
+    private boolean inRange = false;
+
+    public ScoreAlignSwerve(Swerve s_Swerve, Vision s_Vision, double targetSide) {
         this.s_Swerve = s_Swerve;
         addRequirements(s_Swerve);
         this.s_Vision = s_Vision;
+        this.targetSide = targetSide;
         drive = false;
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
         drive = false;
+        s_Vision.processVision();
+        if (s_Vision.isTargetPresent()) {
+            this.initialY = s_Vision.getTargetY();
+        }
     }
 
     @Override
     public void execute() {
         double rotationVal;
-        
 
-        
-            rotationVal = s_Swerve.calculateSwerveRotation(180) + Constants.Swerve.angleKF;
-            rotationVal = MathUtil.clamp(rotationVal, -Constants.Swerve.maxRotationalSpeed, Constants.Swerve.maxRotationalSpeed);
-        
-            double translationVal = 0;
-            double strafeVal = 0;
+        rotationVal = s_Swerve.calculateSwerveRotation(0);
+        rotationVal = MathUtil.clamp(rotationVal, -Constants.Swerve.maxRotationalSpeed,
+                Constants.Swerve.maxRotationalSpeed);
 
-            s_Vision.processVision();
+        double translationVal = 0;
+        double strafeVal = 0;
 
-            if(s_Vision.isTargetPresent()) {
-                double targetYaw = s_Vision.getHighYaw() + 1;
-                boolean inRange = Math.abs(targetYaw) < goalYaw;
-                System.out.println("IN RANGE: "+inRange);
-                
+        s_Vision.processVision();
 
-                strafeVal = s_Vision.calculateStrafe(targetYaw, inRange) + (Math.signum(-targetYaw) * .08);
-                if (inRange){
-                    drive = true;
-                }
-                if (drive) {
-                        translationVal = .23;
-                        strafeVal = 0;
-                }
+        double goalY;
+        double error;
+
+        if (s_Vision.isTargetPresent() && !inRange) {
+            SmartDashboard.putNumber("current Y", s_Vision.getTargetY());
+            if (targetSide == -1) {
+                goalY = 0.51; // RIGHT SIDE -> LEFT SIDE (DRIVER)
+                error = s_Vision.getTargetY() - goalY;
+                inRange = Math.abs(error) < .02;
+
+                strafeVal = s_Vision.calculateStrafe(error, drive);
+            } else if (targetSide == 1) {
+                goalY = -0.57; // LEFT SIDE -> RIGHT SIDE (DRIVER)
+                error = s_Vision.getTargetY() - goalY;
+                inRange = Math.abs(error) < .02;
+
+                strafeVal = s_Vision.calculateStrafe(error, drive);
+            } else {
+                strafeVal = 0;
             }
-
+        }
+        if (inRange) {
+            translationVal = .23;
+            strafeVal = 0;
+        }
 
         /* Drive */
         s_Swerve.drive(
-            new Translation2d(translationVal, strafeVal)
-             .times(Constants.Swerve.maxSpeed), 
-            rotationVal * Constants.Swerve.maxAngularVelocity, 
-            true, 
-            true
-        );
+                new Translation2d(translationVal, strafeVal)
+                        .times(Constants.Swerve.maxSpeed),
+                rotationVal * Constants.Swerve.maxAngularVelocity,
+                true,
+                true);
     }
 }

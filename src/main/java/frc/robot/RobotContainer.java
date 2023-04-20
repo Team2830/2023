@@ -54,6 +54,10 @@ public class RobotContainer {
 
     private final JoystickButton intakeVomit = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
 
+    private final Trigger alignLeft = new Trigger(() -> (operator.getPOV() > 40 && operator.getPOV() < 140));
+
+    private final Trigger alignRight = new Trigger(() -> (operator.getPOV() > 220 && operator.getPOV() < 320));
+
     /* Operator Buttons */
     private final JoystickButton toggleArmPiston = new JoystickButton(operator,
             XboxController.Button.kLeftBumper.value);
@@ -97,13 +101,13 @@ public class RobotContainer {
         // TODO: Remove no longer relevant autonomous commands
         SmartDashboard.putNumber("Cone adjust", 0);
         autoChooser = new SendableChooser<>();
-        autoChooser.setDefaultOption("Red C_C1 Charge", new ChargeAndMobility(s_Swerve, arm, intake));
-        autoChooser.addOption("Blue C_C1 Charge", new FlippedChargeAndMobility(s_Swerve, arm, intake));
+        // autoChooser.setDefaultOption("Red C_C1 Charge", new ChargeAndMobility(s_Swerve, arm, intake));
+        // autoChooser.addOption("Blue C_C1 Charge", new FlippedChargeAndMobility(s_Swerve, arm, intake));
         //autoChooser.addOption("Red I_C1 Two Piece", new TwoPieceAuto(s_Swerve, arm, intake));
         //autoChooser.addOption("Blue I_C2 Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
         //autoChooser.addOption("Mobility", new Mobility(s_Swerve, arm, intake));
-        //autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake));
-        //autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake));
+        autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake, wrist));
+        autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("Red I_CU Three Piece", new OldThreePieceAuto(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("Blue I_CU Three Piece", new FlippedThreePieceAuto(s_Swerve, arm, intake, wrist));
@@ -137,7 +141,9 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(0)));
-        alignToTarget.whileTrue(new ScoreAlignSwerve(s_Swerve, vision));
+        alignToTarget.whileTrue(new ScoreAlignSwerve(s_Swerve, vision, 0));
+        alignLeft.whileTrue(new ScoreAlignSwerve(s_Swerve, vision, -1));
+        alignRight.whileTrue(new ScoreAlignSwerve(s_Swerve, vision, 1));
 
         intakeVomit.onTrue(new TimedVomit(intake).andThen(new InstantCommand(() -> arm.retractPiston(), arm)));
         intakeToggle.onFalse(new IntakeToggle(intake, intakeToggle));

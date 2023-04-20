@@ -3,6 +3,7 @@ package frc.robot.autos;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmStates;
 import frc.robot.Constants.Translations;
+import frc.robot.commands.ArmToAngle;
 import frc.robot.commands.AutoBalance;
 import frc.robot.commands.DriveArmToPosition;
 import frc.robot.commands.IntakeToggle;
@@ -127,9 +128,10 @@ public class CubeCharge extends SequentialCommandGroup {
                                 new InstantCommand(() -> s_Swerve.zeroGyro(0)),
                                 new InstantCommand(() -> s_Swerve.resetOdometry(driveOnCharge.getInitialPose())),
                                 new ParallelDeadlineGroup(new WaitCommand(.3),
-                                                new IntakeToggle(intake, () -> false)), // SUCK
+                                                new IntakeToggle(intake, () -> false),   // SUCK
+                                               new ArmToAngle(arm, -30)),
                                 new ParallelDeadlineGroup(
-                                                new WaitCommand(2),
+                                                new WaitCommand(2.5),
                                                 new SetArmState(arm, wrist, ArmStates.MID)),
                                 new TimedVomit(intake),
                                 new InstantCommand(() -> arm.retractPiston()),
@@ -141,7 +143,7 @@ public class CubeCharge extends SequentialCommandGroup {
                                                 new SetArmState(arm, wrist, ArmStates.HOME)),
 
                                 mobility,
-                                new WaitCommand(.5),
+                                new WaitCommand(.2),
                                 toCharge,
                                 new AutoBalance(s_Swerve)
 
