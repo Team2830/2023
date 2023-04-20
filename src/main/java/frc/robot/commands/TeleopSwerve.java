@@ -29,7 +29,10 @@ public class TeleopSwerve extends CommandBase {
     private SlewRateLimiter strafeLimiter;
     private SlewRateLimiter armStrafeLimiter;
 
-    private boolean lockRotate;
+    private boolean backwardButtonState = false;
+    private boolean forwardButtonState = false;
+
+    private boolean lockRotate = false;
 
     private double goalAngle = 0;
     private boolean wasArm = false;
@@ -65,12 +68,23 @@ public class TeleopSwerve extends CommandBase {
         double strafeVal;
 
         if (turnToForwardSup.getAsBoolean()) {
-            lockRotate = true;
-            goalAngle = 0;
+            if (!forwardButtonState) {
+                forwardButtonState = true;
+                goalAngle = s_Swerve.calculateGoalAngle(0);
+                lockRotate = true;
+            }
+        } else {
+            forwardButtonState = false;
         }
+
         if (turnToBackwardSup.getAsBoolean()) {
-            lockRotate = true;
-            goalAngle = 180;
+            if (!backwardButtonState) {
+                backwardButtonState = true;
+                goalAngle = s_Swerve.calculateGoalAngle(180);
+                lockRotate = true;
+            }
+        } else {
+            backwardButtonState = false;
         }
 
         if (lockRotate && Math.abs(rotationSup.getAsDouble()) < Constants.stickDeadband) {
@@ -87,30 +101,30 @@ public class TeleopSwerve extends CommandBase {
             strafeInput *= 0.4;
         }
 
-        // if (RobotContainer.ArmState == ArmStates.MID || RobotContainer.ArmState == ArmStates.HIGH) {
-        //     if (!wasArm){
-        //         strafeVal = armStrafeLimiter.calculate(strafeLimiter.calculate(strafeInput));
-        //     }
-        //     else{
-        //         strafeVal = armStrafeLimiter.calculate(strafeInput);
-        //     }
-        //     wasArm = true;
-        // } 
+        // if (RobotContainer.ArmState == ArmStates.MID || RobotContainer.ArmState ==
+        // ArmStates.HIGH) {
+        // if (!wasArm){
+        // strafeVal = armStrafeLimiter.calculate(strafeLimiter.calculate(strafeInput));
+        // }
+        // else{
+        // strafeVal = armStrafeLimiter.calculate(strafeInput);
+        // }
+        // wasArm = true;
+        // }
         // else {
-        //     if (wasArm){
-        //         strafeVal = strafeLimiter.calculate(armStrafeLimiter.calculate(strafeInput));
-        //     }
-        //     else{
-        //         strafeVal = strafeLimiter.calculate(strafeInput);
-        //     }
-        //     wasArm = false;
+        // if (wasArm){
+        // strafeVal = strafeLimiter.calculate(armStrafeLimiter.calculate(strafeInput));
+        // }
+        // else{
+        // strafeVal = strafeLimiter.calculate(strafeInput);
+        // }
+        // wasArm = false;
         // }
         strafeVal = strafeLimiter.calculate(strafeInput);
         /* Drive */
         s_Swerve.drive(
                 new Translation2d(translationLimiter.calculate(translationVal),
-                strafeVal
-                ).times(Constants.Swerve.maxSpeed),
+                        strafeVal).times(Constants.Swerve.maxSpeed),
                 rotationVal * Constants.Swerve.maxAngularVelocity,
                 true,
                 false);

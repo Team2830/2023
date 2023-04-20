@@ -64,6 +64,8 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Arm Angle", getArmAngle());
+    SmartDashboard.putNumber("Absolute Arm Angle", encoder.getAbsolutePosition());
+ 
     // This method will be called once per scheduler run
   }
 
@@ -75,6 +77,14 @@ public class Arm extends SubsystemBase {
     //double armSensorValue = leftMotor.getSelectedSensorPosition();
     //return armSensorValue * 360 / (2048 * 300) + Constants.ArmConstants.startAngle;
     return -encoder.getDistance() - ArmConstants.encoderZeroValue + angleOffset;
+  }
+
+  public double getAbsoluteAngle(){
+    double angle = (encoder.getAbsolutePosition() - .1) * 360;
+    if (angle > 200){
+      angle = angle - 180;
+    }
+        return angle;
   }
 
   public void setArmAngle(double angle){

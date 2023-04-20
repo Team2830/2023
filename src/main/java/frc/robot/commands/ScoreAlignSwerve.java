@@ -33,6 +33,7 @@ public class ScoreAlignSwerve extends CommandBase {
 
     @Override
     public void initialize() {
+        inRange = false;
         drive = false;
         s_Vision.processVision();
         if (s_Vision.isTargetPresent()) {
@@ -58,14 +59,14 @@ public class ScoreAlignSwerve extends CommandBase {
 
         if (s_Vision.isTargetPresent() && !inRange) {
             SmartDashboard.putNumber("current Y", s_Vision.getTargetY());
-            if (targetSide == -1) {
-                goalY = 0.51; // RIGHT SIDE -> LEFT SIDE (DRIVER)
+            if (targetSide == 1) {
+                goalY = 0.51; // RIGHT SIDE (DRIVER)
                 error = s_Vision.getTargetY() - goalY;
                 inRange = Math.abs(error) < .02;
 
                 strafeVal = s_Vision.calculateStrafe(error, drive);
-            } else if (targetSide == 1) {
-                goalY = -0.57; // LEFT SIDE -> RIGHT SIDE (DRIVER)
+            } else if (targetSide == -1) {
+                goalY = -0.57; // LEFT SIDE (DRIVER)
                 error = s_Vision.getTargetY() - goalY;
                 inRange = Math.abs(error) < .02;
 

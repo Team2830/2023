@@ -101,11 +101,11 @@ public final class Constants {
 
                 public static final double defaultSpeed = 0;
                 public static final double intakeSpeed = 1;
-                public static final double holdSpeed = .1;
+                public static final double holdSpeed = .16;
                 public static final double vomitSpeed = -.6;
                 public static final double vomitSeconds = .5;
 
-                public static final double intakeCurrent = 220;
+                public static final double intakeCurrent = 240;
         }
 
         public static enum RobotStates {

@@ -54,9 +54,9 @@ public class RobotContainer {
 
     private final JoystickButton intakeVomit = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
 
-    private final Trigger alignLeft = new Trigger(() -> (operator.getPOV() > 40 && operator.getPOV() < 140));
+    private final Trigger alignLeft = new Trigger(() -> (driver.getPOV() > 40 && driver.getPOV() < 140));
 
-    private final Trigger alignRight = new Trigger(() -> (operator.getPOV() > 220 && operator.getPOV() < 320));
+    private final Trigger alignRight = new Trigger(() -> (driver.getPOV() > 220 && driver.getPOV() < 320));
 
     /* Operator Buttons */
     private final JoystickButton toggleArmPiston = new JoystickButton(operator,
@@ -116,6 +116,9 @@ public class RobotContainer {
         autoChooser.addOption("Example", new exampleAuto(s_Swerve));
 
         SmartDashboard.putData("autoChooser", autoChooser);
+        arm.setDefaultCommand(new InstantCommand(()-> arm.setMotorSpeed(0), arm));
+        wrist.setDefaultCommand(new InstantCommand(()-> wrist.setMotorSpeed(0), wrist));
+
         s_Swerve.setDefaultCommand(
                 new TeleopSwerve(
                         s_Swerve,

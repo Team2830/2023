@@ -25,12 +25,10 @@ public class Wrist extends SubsystemBase {
   private WPI_TalonFX wristMotor = new WPI_TalonFX(Constants.WristConstants.wristID);
   private DutyCycleEncoder encoder = new DutyCycleEncoder(9);
   private double angleOffset = 0;
-  
-  
+
   PIDController wristController = new PIDController(Constants.WristMotorPID.kP,
-  Constants.WristMotorPID.kI,
-  Constants.WristMotorPID.kD);
-  
+      Constants.WristMotorPID.kI,
+      Constants.WristMotorPID.kD);
 
   /** Creates a new Arm. */
   public Wrist() {
@@ -39,7 +37,7 @@ public class Wrist extends SubsystemBase {
     wristMotor.setNeutralMode(NeutralMode.Brake);
     configWristMotor(wristMotor, true);
     resetWrist();
-    if(Math.abs(encoder.getDistance()) > 180){
+    if (Math.abs(encoder.getDistance()) > 180) {
       angleOffset = 360;
     } else {
       angleOffset = 0;
@@ -58,27 +56,24 @@ public class Wrist extends SubsystemBase {
   }
 
   public double getWristAngle() {
-    //double wristPos = wristMotor.getSelectedSensorPosition();
-    //return wristPos * 360 / (2048 * 125) + Constants.WristConstants.startAngle;
+    // double wristPos = wristMotor.getSelectedSensorPosition();
+    // return wristPos * 360 / (2048 * 125) + Constants.WristConstants.startAngle;
     return (encoder.getDistance() - angleOffset);
   }
 
   public void resetWrist() {
-    wristMotor.setSelectedSensorPosition(0); //TODO Use absolute encoder
+    wristMotor.setSelectedSensorPosition(0); // TODO Use absolute encoder
   }
 
   public void setMotorSpeed(double speed) {
-    wristMotor.set(ControlMode.PercentOutput, speed, DemandType.ArbitraryFeedForward, Math.signum(speed) * WristMotorPID.kG); 
+    wristMotor.set(ControlMode.PercentOutput, speed, DemandType.ArbitraryFeedForward,
+        Math.signum(speed) * WristMotorPID.kG);
   }
 
-  
   // TODO: Add a condition to switch to manual if the encoder is disconnected
-  public void setWristAngle(double angle){
+  public void setWristAngle(double angle) {
     setMotorSpeed(wristController.calculate(getWristAngle(), angle));
   }
-
- 
-  
 
   private void configWristMotor(WPI_TalonFX talonFX, boolean inverted) {
     talonFX.configFactoryDefault();
