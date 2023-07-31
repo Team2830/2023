@@ -17,13 +17,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.TigerCoder;
 import frc.robot.Constants;
 import frc.robot.Constants.WristConstants;
 import frc.robot.Constants.WristMotorPID;
 
 public class Wrist extends SubsystemBase {
   private WPI_TalonFX wristMotor = new WPI_TalonFX(Constants.WristConstants.wristID);
-  private DutyCycleEncoder encoder = new DutyCycleEncoder(9);
+  private TigerCoder encoder = new TigerCoder(9, 1, 0, 59.67, false);
   private double angleOffset = 0;
 
   PIDController wristController = new PIDController(Constants.WristMotorPID.kP,
@@ -48,6 +49,7 @@ public class Wrist extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Wrist Angle", getWristAngle());
     SmartDashboard.putNumber("Wrist Absolute", encoder.getAbsolutePosition());
+    SmartDashboard.putNumber("Wrist Angle", encoder.getRealPosition());
     // This method will be called once per scheduler run
   }
 
@@ -58,7 +60,7 @@ public class Wrist extends SubsystemBase {
   public double getWristAngle() {
     // double wristPos = wristMotor.getSelectedSensorPosition();
     // return wristPos * 360 / (2048 * 125) + Constants.WristConstants.startAngle;
-    return (encoder.getDistance() - angleOffset);
+    return encoder.getRealPosition();//(encoder.getDistance() - angleOffset);
   }
 
   public void resetWrist() {

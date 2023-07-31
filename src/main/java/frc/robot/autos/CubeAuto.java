@@ -1,11 +1,17 @@
 package frc.robot.autos;
 
 import frc.robot.Constants;
+import frc.robot.Constants.ArmStates;
 import frc.robot.Constants.Translations;
+import frc.robot.commands.ArmToAngle;
 import frc.robot.commands.DriveArmToPosition;
+import frc.robot.commands.IntakeToggle;
+import frc.robot.commands.SetArmState;
+import frc.robot.commands.TimedVomit;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Wrist;
 
 import java.util.List;
 
@@ -25,18 +31,24 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class CubeAuto extends SequentialCommandGroup {
-        public CubeAuto(Arm arm, Intake intake) {
+        public CubeAuto(Arm arm, Intake intake, Wrist wrist) {
 
                 DriveArmToPosition armToHome = new DriveArmToPosition(arm, Constants.ArmConstants.homeAngle, false);
 
                 addCommands(
-                                new InstantCommand(() -> arm.resetArm()),
-                                new DriveArmToPosition(arm, Constants.ArmConstants.cubeHigh, true),
-                                new WaitCommand(1.5),
-                                new InstantCommand(() -> intake.intakeVomit(), intake),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> arm.retractPiston(), arm),
-                                armToHome
+                        new ParallelDeadlineGroup(new WaitCommand(.3),
+                        new IntakeToggle(intake, () -> false),   // SUCK
+                       new ArmToAngle(arm, -30)),
+                        new ParallelDeadlineGroup(
+                                        new WaitCommand(3),
+                                        new SetArmState(arm, wrist, ArmStates.HIGH)),
+                        new TimedVomit(intake),
+                        new InstantCommand(() -> arm.retractPiston()),
+                        new ParallelDeadlineGroup(
+                                        new WaitCommand(2),
+                                        new SetArmState(arm, wrist, ArmStates.HOME))
+
+                // chargeBalance
                 );
         }
 }

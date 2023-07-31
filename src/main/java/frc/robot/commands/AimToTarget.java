@@ -35,7 +35,7 @@ public class AimToTarget extends CommandBase {
             } else if(vision.getTargetYaw() < -2){
             rotationVal = -0.2;
             } else {rotationVal = 0;}
-            System.out.println("yaw: " + vision.getTargetYaw());
+            // System.out.println("yaw: " + vision.getTargetYaw());
         } else{
             rotationVal = 0;
         }

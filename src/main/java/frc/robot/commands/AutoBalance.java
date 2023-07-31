@@ -37,8 +37,8 @@ public class AutoBalance extends CommandBase {
             driveSpeed = 0;
         }
 
-        System.out.println("Raw roll " + s_Swerve.getRoll());
-        System.out.println("Calculated: " + roll);
+        // System.out.println("Raw roll " + s_Swerve.getRoll());
+        // System.out.println("Calculated: " + roll);
 
         // if(roll > 5){
         // driveSpeed = .13;

@@ -6,14 +6,20 @@ public class TigerCoder extends DutyCycleEncoder{
 
     private int m_Case;
     private double m_CutoffAngle;
-    private DutyCycleEncoder encoder = new DutyCycleEncoder(9);
     private double angleOffset = 0;
+    private boolean m_Inverted = false;
+
+    public String toString() {
+        return "Absolute Position: " + getAbsolutePosition();
+    }
 
 
-    public TigerCoder(int channel, int myCase, double cutoffAngle) {
+    public TigerCoder(int channel, int myCase, double cutoffAngle, double offset, boolean inverted) {
         super(channel);
         this.m_Case = myCase;
         this.m_CutoffAngle = cutoffAngle;
+        this.m_Inverted = inverted;
+        this.angleOffset = offset;
     }
 
 
@@ -34,7 +40,7 @@ public class TigerCoder extends DutyCycleEncoder{
 public double getRealPositionCase1 () {
 
         double myPos = getAbsolutePosition()*360;
-        return myPos - angleOffset;
+        return (m_Inverted) ? -1 * (myPos - angleOffset) : (myPos - angleOffset);
 } 
 public double getRealPositionCase2 () {
 

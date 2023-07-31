@@ -109,6 +109,7 @@ public class RobotContainer {
         autoChooser.addOption("L Cube Mobility", new LeftCubeMobility(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("R Cube Mobility", new RightCubeMobility(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("Cube Charge", new CubeCharge(s_Swerve, arm, intake, wrist));
+        autoChooser.addOption("Cube", new CubeAuto(arm, intake,wrist));
         autoChooser.addOption("Red I_CU Three Piece", new OldThreePieceAuto(s_Swerve, arm, intake, wrist));
         autoChooser.addOption("Blue I_CU Three Piece", new FlippedThreePieceAuto(s_Swerve, arm, intake, wrist));
         //autoChooser.addOption("Blue I_CU Two Piece", new FlippedTwoPieceAuto(s_Swerve, arm, intake));
@@ -171,10 +172,11 @@ public class RobotContainer {
                 .onTrue(new SetArmState(arm, wrist, ArmStates.HOME));
 
         armManual.onTrue(new InstantCommand(() -> ArmState = ArmStates.DEFAULT))
-                .onTrue(new ArmManual(arm, () -> (operator.getRawAxis(XboxController.Axis.kLeftY.value))));
+                .whileTrue(new ArmManual(arm, () -> (operator.getRawAxis(XboxController.Axis.kLeftY.value))));
 
         wristManual.whileTrue(new WristManual(wrist, () -> (operator.getRawAxis(XboxController.Axis.kRightY.value))));
     }
+    
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

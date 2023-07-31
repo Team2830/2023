@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.TigerCoder;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ArmStates;
@@ -27,10 +28,10 @@ public class Arm extends SubsystemBase {
   private WPI_TalonFX leftMotor = new WPI_TalonFX(Constants.ArmConstants.climberLMotorID);
   private WPI_TalonFX rightMotor = new WPI_TalonFX(Constants.ArmConstants.climberRMotorID);
   
-  private DoubleSolenoid armPiston = new DoubleSolenoid(PneumaticsModuleType.REVPH,
+  private DoubleSolenoid armPiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
       Constants.ArmConstants.armForwardID, Constants.ArmConstants.armReverseID);
 
-  private DutyCycleEncoder encoder = new DutyCycleEncoder(0);
+  private TigerCoder encoder = new TigerCoder(0, 1, 0, 301.21, true);
 
   PIDController controller = new PIDController(Constants.ArmMotorPID.kP,
   Constants.ArmMotorPID.kI,
@@ -63,8 +64,8 @@ public class Arm extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm Angle", getArmAngle());
- 
+    SmartDashboard.putNumber("Arm Angle", encoder.getRealPosition());
+    System.out.println(encoder);
     // This method will be called once per scheduler run
   }
 
@@ -75,7 +76,7 @@ public class Arm extends SubsystemBase {
   public double getArmAngle() {
     //double armSensorValue = leftMotor.getSelectedSensorPosition();
     //return armSensorValue * 360 / (2048 * 300) + Constants.ArmConstants.startAngle;
-    return -encoder.getDistance() - ArmConstants.encoderZeroValue + angleOffset;
+    return encoder.getRealPosition();//-encoder.getDistance() - ArmConstants.encoderZeroValue + angleOffset;
   }
 
   public void setArmAngle(double angle){

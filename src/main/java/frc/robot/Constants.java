@@ -102,7 +102,7 @@ public final class Constants {
                 public static final double defaultSpeed = 0;
                 public static final double intakeSpeed = 1;
                 public static final double holdSpeed = .16;
-                public static final double vomitSpeed = -1;//-.6
+                public static final double vomitSpeed = -.6;//-.6
                 public static final double vomitSeconds = .5;
 
                 public static final double intakeCurrent = 240;

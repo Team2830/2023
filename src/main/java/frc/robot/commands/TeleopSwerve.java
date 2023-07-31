@@ -61,8 +61,8 @@ public class TeleopSwerve extends CommandBase {
     @Override
     public void execute() {
         /* Get Values, Deadband */
-        double translationVal = MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.stickDeadband) * .25;
-        double strafeInput = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband) * .8 *.25;
+        double translationVal = MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.stickDeadband);
+        double strafeInput = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband) * .8;
 
         double rotationVal;
         double strafeVal;
@@ -88,7 +88,7 @@ public class TeleopSwerve extends CommandBase {
         }
 
         if (lockRotate && Math.abs(rotationSup.getAsDouble()) < Constants.stickDeadband) {
-            rotationVal = s_Swerve.calculateSwerveRotation(goalAngle) * .25;
+            rotationVal = s_Swerve.calculateSwerveRotation(goalAngle);
             rotationVal = MathUtil.clamp(rotationVal, -Constants.Swerve.maxRotationalSpeed,
                     Constants.Swerve.maxRotationalSpeed);
         } else {
