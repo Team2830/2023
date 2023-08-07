@@ -1,7 +1,11 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.ctre.phoenix.platform.can.AutocacheState;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -18,7 +22,7 @@ import frc.robot.Constants.WristConstants;
 import frc.robot.autos.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
-
+import com.pathplanner.lib.*;
 /**
  * This class is where the bulk of the robot should be declared. Since
  * Command-based is a
@@ -29,6 +33,8 @@ import frc.robot.subsystems.*;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+        private ArrayList<PathPlannerTrajectory> autoPathGroup;
+        private HashMap<String, Command> eventMap;
 
     private SendableChooser<Command> autoChooser;
 
@@ -184,11 +190,18 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
+        return s_Swerve.followTrajectoryCommand(autoPathGroup, eventMap, true)
+        .andThen(() -> s_Swerve.drive(new Translation2d(0, 0),0, false, false));
         // An ExampleCommand will run in autonomous
         // return new exampleAuto(s_Swerve);
         // return new AutoBalance(s_Swerve);
         // return new TwoPieceAuto(s_Swerve, arm, intake);
         // return new ChargeAndMobility(s_Swerve,arm,intake);
-       return autoChooser.getSelected();
+       // return autoChooser.getSelected();
+    }
+    public void autonomousInit () {
+        autoPathGroup = (ArrayList<PathPlannerTrajectory>) PathPlanner.loadPathGroup("path1", true, new PathConstraints(3, 2));
+
+        eventMap = new HashMap<>();
     }
 }
